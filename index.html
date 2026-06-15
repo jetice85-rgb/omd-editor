@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMD Editor</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Microsoft YaHei",sans-serif;background:#1a1a2e;color:#e0e0e0;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+
+/* 工具栏 */
+.toolbar{display:flex;align-items:center;padding:8px 14px;background:#16213e;border-bottom:1px solid #0f3460;flex-shrink:0;gap:6px}
+.toolbar .logo{font-size:16px;font-weight:700;color:#e94560;margin-right:10px}
+.toolbar .filename{color:#a0a0b0;font-size:12px;margin-right:auto}
+.toolbar button{padding:5px 10px;border:1px solid #0f3460;background:#1a1a2e;color:#c0c0d0;border-radius:4px;cursor:pointer;font-size:12px}
+.toolbar button:hover{background:#0f3460;border-color:#e94560}
+.toolbar button.active{background:#e94560;border-color:#e94560;color:#fff}
+.toolbar .sep{width:1px;height:18px;background:#0f3460;margin:0 3px}
+.toolbar .view-switch{display:flex;background:#0f0f1a;border-radius:5px;overflow:hidden}
+.toolbar .view-switch button{border:none;border-radius:0;padding:5px 12px}
+.toolbar .view-switch button.active{background:#e94560}
+
+/* 编辑区 */
+.main{flex:1;display:flex;overflow:hidden}
+
+/* 文档视图 */
+#doc-view{flex:1;overflow:auto;padding:32px 48px;outline:none;font-size:15px;line-height:1.8;max-width:900px;margin:0 auto;width:100%}
+#doc-view h1{font-size:26px;margin:28px 0 12px;color:#e94560}
+#doc-view h2{font-size:20px;margin:22px 0 10px;color:#f0a0b0}
+#doc-view h3{font-size:17px;margin:18px 0 8px}
+#doc-view p{margin:8px 0}
+#doc-view strong{color:#fff}
+#doc-view blockquote{border-left:3px solid #e94560;padding:8px 16px;margin:12px 0;background:rgba(233,69,96,0.06)}
+#doc-view ul,#doc-view ol{padding-left:22px;margin:8px 0}
+#doc-view li{margin:3px 0}
+#doc-view table{border-collapse:collapse;width:100%;margin:12px 0}
+#doc-view th,#doc-view td{border:1px solid #0f3460;padding:7px 10px}
+#doc-view th{background:#16213e;color:#e94560}
+#doc-view code{background:#0f3460;padding:2px 5px;border-radius:3px;font-size:13px}
+#doc-view pre{background:#0a0a1a;padding:10px 14px;border-radius:6px}
+#doc-view pre code{background:none;padding:0}
+#doc-view hr{border:none;border-top:1px solid #0f3460;margin:24px 0}
+#doc-view a{color:#e94560}
+
+/* 表格视图 */
+#sheet-view{flex:1;display:none;overflow:auto;padding:16px}
+#sheet-view table{border-collapse:collapse;width:fit-content;min-width:100%}
+#sheet-view th,#sheet-view td{border:1px solid #0f3460;padding:6px 10px;min-width:80px;text-align:left}
+#sheet-view th{background:#16213e;color:#e94560;font-weight:600}
+#sheet-view td{background:#1a1a2e}
+#sheet-view td:focus,#sheet-view th:focus{outline:2px solid #e94560;background:#0f0f1a}
+#sheet-view td[contenteditable],#sheet-view th[contenteditable]{cursor:text}
+
+/* 幻灯片视图 */
+#slide-view{flex:1;display:none;align-items:center;justify-content:center;padding:24px}
+#slide-view .slide-card{background:#16213e;border-radius:12px;padding:48px 64px;max-width:800px;width:100%;min-height:400px;border:1px solid #0f3460}
+#slide-view .slide-card h1{font-size:32px;color:#e94560;margin-bottom:16px}
+#slide-view .slide-card h2{font-size:22px;color:#f0a0b0;margin-bottom:12px}
+#slide-view .slide-card p{font-size:16px;margin:8px 0;line-height:1.7}
+#slide-view .slide-nav{display:flex;gap:8px;margin-top:16px;justify-content:center}
+#slide-view .slide-nav button{padding:8px 20px;border:1px solid #0f3460;background:#1a1a2e;color:#e0e0e0;border-radius:4px;cursor:pointer}
+#slide-view .slide-nav button:hover{background:#0f3460}
+#slide-view .slide-nav .page-num{color:#888;font-size:13px;padding:8px}
+
+/* 右键菜单 */
+.ctx-menu{display:none;position:fixed;background:#16213e;border:1px solid #0f3460;border-radius:6px;padding:4px 0;z-index:999;min-width:180px;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+.ctx-menu .item{padding:8px 16px;cursor:pointer;font-size:13px;color:#c0c0d0}
+.ctx-menu .item:hover{background:#0f3460;color:#fff}
+.ctx-menu .divider{height:1px;background:#0f3460;margin:4px 0}
+
+/* 状态栏 */
+.statusbar{display:flex;align-items:center;padding:4px 14px;background:#0f0f1a;border-top:1px solid #0f3460;font-size:11px;color:#555;flex-shrink:0;gap:12px}
+.statusbar .dot{width:6px;height:6px;border-radius:50%;background:#4ecca3;display:inline-block}
+.statusbar .dot.dirty{background:#e94560}
+
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#e94560;color:#fff;padding:10px 24px;border-radius:8px;font-size:13px;z-index:999;animation:fadeIn .3s}
+@keyframes fadeIn{from{opacity:0;transform:translateX(-50%) translateY(10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <span class="logo">OMD</span>
+  <span class="filename" id="filename">未命名.omd</span>
+  
+  <div class="view-switch">
+    <button id="btn-doc" class="active">📝 文档</button>
+    <button id="btn-sheet">📊 表格</button>
+    <button id="btn-slide">📽 幻灯</button>
+  </div>
+  
+  <div class="sep"></div>
+  <button id="btn-bold"><b>B</b></button>
+  <button id="btn-italic"><i>I</i></button>
+  <button id="btn-h1">H1</button>
+  <button id="btn-h2">H2</button>
+  <button id="btn-list">≡</button>
+  <button id="btn-quote">❝</button>
+  
+  <div class="sep"></div>
+  <button id="btn-new">📄 新建</button>
+  <button id="btn-open">📂 打开</button>
+  <button id="btn-save">💾 保存</button>
+  <button id="btn-export" style="background:#e94560;border-color:#e94560;color:#fff">⤓ 导出</button>
+</div>
+
+<div class="main">
+  <div id="doc-view" contenteditable="true"></div>
+  <div id="sheet-view"></div>
+  <div id="slide-view"></div>
+</div>
+
+<div class="statusbar">
+  <span class="dot" id="dot"></span><span id="status">已保存</span>
+  <span style="margin-left:auto">OMD · 智慧生而共通</span>
+</div>
+
+<!-- 右键菜单 -->
+<div class="ctx-menu" id="ctx-menu">
+  <div class="item" data-action="export-docx">📄 导出为 Word (.docx)</div>
+  <div class="item" data-action="export-xlsx">📊 导出为 Excel (.xlsx)</div>
+  <div class="item" data-action="export-pptx">📽 导出为 PowerPoint (.pptx)</div>
+  <div class="divider"></div>
+  <div class="item" data-action="export-pdf">📕 导出为 PDF</div>
+</div>
+
+<script>
+// ====== State ======
+let currentOMD = '---\ntitle: "新文档"\ntags: []\n---\n\n# 新文档\n\n开始编写...\n\n<!--OMD\n-->\n';
+let view = 'doc';
+let isDirty = false;
+let slideIndex = 0;
+
+// ====== Parser (embedded omd-core) ======
+function parseOMD(omd){var t=omd.trimStart();var hm=t.match(/^---\n([\s\S]*?)\n---\n/);var meta={title:''},rest=t;if(hm){try{hm[1].split('\n').forEach(function(l){var m=l.match(/^(\w+):\s*(.+)/);if(m&&m[1]==='title')meta.title=m[2].trim().replace(/^"(.*)"$/,'$1')})}catch(e){}rest=t.slice(hm[0].length)}var rm=rest.match(/<!--OMD\n?([\s\S]*?)\n?-->/);var body=rest;if(rm)body=rest.slice(0,rm.index).trim();else body=rest.trim();return{meta:meta,body:body}}
+function getYAML(omd){var m=omd.match(/^---\n([\s\S]*?)\n---\n/);return m?m[1]:''}
+
+function mdToHTML(body){var h='',lines=body.split('\n'),inT=false,tH='',inC=false,cH='';for(var i=0;i<lines.length;i++){var l=lines[i];if(/^```/.test(l)){if(inC){h+='<pre><code>'+esc(cH.trim())+'</code></pre>\n';cH='';inC=false}else{inC=true}continue}if(inC){cH+=l+'\n';continue}if(/^\|.+\|/.test(l)){if(!inT){inT=true;tH='<table>'}if(/^\|[\s\-:]+\|$/.test(l))continue;var tag=tH==='<table>'?'th':'td';tH+='<tr>'+l.split('|').filter(function(c){return c.trim()!==''||c===''}).map(function(c){return'<'+tag+'>'+c.trim()+'</'+tag+'>'}).join('')+'</tr>';continue}else if(inT){h+=tH+'</table>\n';tH='';inT=false}if(/^#### (.+)/.test(l))h+='<h4>'+l.slice(5)+'</h4>\n';else if(/^### (.+)/.test(l))h+='<h3>'+l.slice(4)+'</h3>\n';else if(/^## (.+)/.test(l))h+='<h2>'+l.slice(3)+'</h2>\n';else if(/^# (.+)/.test(l))h+='<h1>'+l.slice(2)+'</h1>\n';else if(/^> (.+)/.test(l))h+='<blockquote>'+l.slice(2)+'</blockquote>\n';else if(/^---+$/.test(l.trim()))h+='<hr>\n';else if(/^[\-\*] (.+)/.test(l))h+='<li>'+l.slice(2)+'</li>\n';else if(/^\s*$/.test(l))h+='<br>';else{var t=l;t=t.replace(/\*\*\*(.+?)\*\*\*/g,'<strong><em>$1</em></strong>');t=t.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');t=t.replace(/\*(.+?)\*/g,'<em>$1</em>');t=t.replace(/`([^`]+)`/g,'<code>$1</code>');t=t.replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a href="$2">$1</a>');h+='<p>'+t+'</p>\n'}}if(inT)h+=tH+'</table>\n';if(inC)h+='<pre><code>'+esc(cH.trim())+'</code></pre>\n';h=h.replace(/((?:<li>[\s\S]*?<\/li>\n?)+)/g,'<ul>$1</ul>');return h}
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function wysiwygToMD(el){var p=[];function w(n){if(n.nodeType===3){p.push(n.textContent);return}if(n.nodeType!==1)return;var t=n.tagName.toLowerCase(),k=n.childNodes;function e(){for(var i=0;i<k.length;i++)w(k[i])}switch(t){case'h1':p.push('\n# ');e();p.push('\n\n');break;case'h2':p.push('\n## ');e();p.push('\n\n');break;case'h3':p.push('\n### ');e();p.push('\n\n');break;case'h4':p.push('\n#### ');e();p.push('\n\n');break;case'p':e();p.push('\n\n');break;case'strong':p.push('**');e();p.push('**');break;case'em':p.push('*');e();p.push('*');break;case'code':if(n.parentNode.tagName.toLowerCase()==='pre'){p.push('\n```\n');e();p.push('\n```\n')}else{p.push('`');e();p.push('`')}break;case'pre':e();break;case'blockquote':p.push('> '+n.textContent.trim().replace(/\n/g,'\n> ')+'\n\n');break;case'li':p.push('- ');e();p.push('\n');break;case'ul':case'ol':e();p.push('\n');break;case'br':p.push('\n');break;case'a':p.push('[');e();p.push(']('+(n.getAttribute('href')||'')+')');break;case'hr':p.push('\n---\n');break;case'table':var rs=n.querySelectorAll('tr');for(var r=0;r<rs.length;r++){var cs=rs[r].querySelectorAll('th,td');p.push('|'+Array.from(cs).map(function(c){return' '+c.textContent.trim()+' |'}).join('')+'\n');if(r===0&&cs.length)p.push('|'+Array.from(cs).map(function(){return' --- |'}).join('')+'\n')}p.push('\n');break;default:e();break}}w(el);return p.join('').replace(/\n{3,}/g,'\n\n').trim()}
+
+function syncWysiwyg(){var md=wysiwygToMD(docView);var y=getYAML(currentOMD);currentOMD='---\n'+y+'\n---\n\n'+md+'\n\n<!--OMD\n-->\n'}
+function refresh(){var d=parseOMD(currentOMD);if(view==='doc')docView.innerHTML=mdToHTML(d.body);if(view==='sheet')renderSheet(d.body);if(view==='slide')renderSlide(d.body);filename.textContent=(d.meta.title||'未命名')+'.omd'}
+function mark(d){isDirty=d;dot.className='dot'+(d?' dirty':'');status.textContent=d?'已修改':'已保存'}
+
+// ====== DOM ======
+var docView=document.getElementById('doc-view'),sheetView=document.getElementById('sheet-view'),slideView=document.getElementById('slide-view'),filename=document.getElementById('filename'),dot=document.getElementById('dot'),status=document.getElementById('status'),ctxMenu=document.getElementById('ctx-menu');
+
+// ====== View Switching ======
+function switchView(v){
+  if(view==='doc'&&v!=='doc')syncWysiwyg();
+  view=v;
+  docView.style.display=v==='doc'?'block':'none';
+  sheetView.style.display=v==='sheet'?'block':'none';
+  slideView.style.display=v==='slide'?'flex':'none';
+  document.getElementById('btn-doc').className=v==='doc'?'active':'';
+  document.getElementById('btn-sheet').className=v==='sheet'?'active':'';
+  document.getElementById('btn-slide').className=v==='slide'?'active':'';
+  refresh();
+  if(v==='doc')docView.focus();
+}
+
+document.getElementById('btn-doc').addEventListener('click',function(){switchView('doc')});
+document.getElementById('btn-sheet').addEventListener('click',function(){switchView('sheet')});
+document.getElementById('btn-slide').addEventListener('click',function(){switchView('slide')});
+
+// ====== Sheet View ======
+function renderSheet(body){
+  var tables=[];var segs=body.split(/^---sheet---$/m);var html='';
+  for(var si=0;si<segs.length;si++){
+    var lines=segs[si].trim().split('\n');var h='<table>';
+    for(var i=0;i<lines.length;i++){
+      var l=lines[i].trim();
+      if(!/^\|.+\|$/.test(l))continue;
+      if(/^\|[\s\-:]+\|$/.test(l))continue;
+      var cells=l.split('|').filter(function(c){return c.trim()!==''||c===''}).map(function(c){return c.trim()});
+      var tag='td';h+='<tr>'+cells.map(function(c){return'<'+tag+' contenteditable>'+c+'</'+tag+'>'}).join('')+'</tr>';
+    }
+    h+='</table>';
+    if(segs.length>1)h='<h3 style="color:#888;margin:16px 0 8px">Sheet '+(si+1)+'</h3>'+h;
+    html+=h;
+  }
+  if(!html)html='<p style="color:#555;text-align:center;margin-top:80px">文档中没有表格。切换到文档视图，插入表格。</p>';
+  sheetView.innerHTML=html;
+}
+
+// ====== Slide View ======
+function renderSlide(body){
+  var slides=[];var segs=body.split(/\n?---slide---\n?/);
+  for(var i=0;i<segs.length;i++){
+    var lines=segs[i].trim().split('\n');var title='',content=[];
+    for(var j=0;j<lines.length;j++){
+      var l=lines[j];
+      if(/^# (.+)/.test(l))title=l.replace(/^# /,'');
+      else if(/^## (.+)/.test(l)){if(!title)title=l.replace(/^## /,'');else content.push('<h2>'+l.replace(/^## /,'')+'</h2>')}
+      else if(l.trim()&&!/^\|/.test(l)&&!/^```/.test(l)&&!/^>/.test(l)){
+        var t=l.replace(/^[\-\*] /,'· ').replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\*(.+?)\*/g,'<em>$1</em>');
+        content.push('<p>'+t+'</p>');
+      }
+    }
+    if(title||content.length)slides.push({title:title,html:content.join('')});
+  }
+  if(!slides.length){slideView.innerHTML='<div class="slide-card"><h1>无幻灯片</h1><p>在文档视图中用 ---slide--- 分隔页面</p></div>';return}
+  slideIndex=Math.min(slideIndex,slides.length-1);
+  var s=slides[slideIndex];
+  slideView.innerHTML='<div class="slide-card"><h1>'+(s.title||'')+'</h1>'+s.html+'</div><div class="slide-nav"><button onclick="prevSlide()">‹ 上一页</button><span class="page-num">'+(slideIndex+1)+' / '+slides.length+'</span><button onclick="nextSlide()">下一页 ›</button></div>';
+}
+function prevSlide(){slideIndex=Math.max(0,slideIndex-1);renderSlide(parseOMD(currentOMD).body)}
+function nextSlide(){var d=parseOMD(currentOMD);var n=d.body.split(/\n?---slide---\n?/).length;slideIndex=Math.min(n-1,slideIndex+1);renderSlide(d.body)}
+
+// ====== Export ======
+async function doExport(format){
+  syncWysiwyg();
+  toast('正在导出 '+format.toUpperCase()+'...');
+  try{
+    var r=await fetch('/api/export/'+format,{method:'POST',body:currentOMD});
+    if(!r.ok)throw new Error('导出失败');
+    var blob=await r.blob();
+    var d=parseOMD(currentOMD);
+    var n=(d.meta.title||'文档').replace(/[/\\?%*:|"<>]/g,'_')+'.'+format;
+    var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=n;a.click();URL.revokeObjectURL(a.href);
+    toast('已导出: '+n);
+  }catch(e){toast('导出失败: '+e.message)}
+}
+function exportPDF(){syncWysiwyg();window.print()}
+
+// ====== Right-click Menu ======
+document.addEventListener('contextmenu',function(e){e.preventDefault();ctxMenu.style.display='block';ctxMenu.style.left=e.clientX+'px';ctxMenu.style.top=e.clientY+'px'});
+document.addEventListener('click',function(){ctxMenu.style.display='none'});
+ctxMenu.addEventListener('click',function(e){
+  var a=e.target.getAttribute('data-action');
+  if(a==='export-docx')doExport('docx');
+  if(a==='export-xlsx')doExport('xlsx');
+  if(a==='export-pptx')doExport('pptx');
+  if(a==='export-pdf')exportPDF();
+  ctxMenu.style.display='none';
+});
+
+// ====== Toolbar ======
+document.getElementById('btn-bold').addEventListener('click',function(){document.execCommand('bold');docView.focus();mark(true)});
+document.getElementById('btn-italic').addEventListener('click',function(){document.execCommand('italic');docView.focus();mark(true)});
+document.getElementById('btn-h1').addEventListener('click',function(){document.execCommand('formatBlock',false,'h1');mark(true)});
+document.getElementById('btn-h2').addEventListener('click',function(){document.execCommand('formatBlock',false,'h2');mark(true)});
+document.getElementById('btn-list').addEventListener('click',function(){document.execCommand('insertUnorderedList');mark(true)});
+document.getElementById('btn-quote').addEventListener('click',function(){document.execCommand('formatBlock',false,'blockquote');mark(true)});
+
+// ====== File ======
+function saveFile(){syncWysiwyg();var d=parseOMD(currentOMD);var n=(d.meta.title||'文档')+'.omd';var b=new Blob([currentOMD],{type:'text/markdown'});var u=URL.createObjectURL(b);var a=document.createElement('a');a.href=u;a.download=n;a.click();URL.revokeObjectURL(u);mark(false);toast('已保存: '+n)}
+function openFile(){var i=document.createElement('input');i.type='file';i.accept='.omd,.md,.txt';i.onchange=function(e){var f=e.target.files[0];if(!f)return;var r=new FileReader();r.onload=function(ev){currentOMD=ev.target.result;mark(false);refresh()};r.readAsText(f)};i.click()}
+document.getElementById('btn-save').addEventListener('click',saveFile);
+document.getElementById('btn-open').addEventListener('click',openFile);
+document.getElementById('btn-new').addEventListener('click',function(){currentOMD='---\ntitle: "新文档"\ntags: []\n---\n\n# 新文档\n\n开始编写...\n\n<!--OMD\n-->\n';mark(false);refresh()});
+document.getElementById('btn-export').addEventListener('click',function(e){ctxMenu.style.display='block';ctxMenu.style.left=e.clientX+'px';ctxMenu.style.top=(e.clientY+20)+'px'});
+
+docView.addEventListener('input',function(){mark(true)});
+document.addEventListener('keydown',function(e){if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.preventDefault();saveFile()}});
+
+// ====== Toast ======
+function toast(msg){var t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);setTimeout(function(){t.remove()},2000)}
+
+// ====== Init ======
+refresh();
+</script>
+</body>
+</html>
