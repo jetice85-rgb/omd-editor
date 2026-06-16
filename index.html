@@ -2,142 +2,158 @@
 <html lang="zh-CN">
 <head><meta charset="UTF-8"><title>OMD Editor</title>
 <style>
+:root{--bg:#1a1a2e;--tb:#16213e;--bd:#0f3460;--red:#e94560;--pink:#f0a0b0;--tx:#e0e0e0;--dim:#888}
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:-apple-system,"Microsoft YaHei",sans-serif;background:#1a1a2e;color:#e0e0e0;height:100vh;overflow:hidden;display:flex;flex-direction:column}
+body{font-family:-apple-system,"Microsoft YaHei",sans-serif;background:var(--bg);color:var(--tx);height:100vh;overflow:hidden;display:flex;flex-direction:column}
 
-/* 工具栏 — 放大 */
-.tb{display:flex;align-items:center;gap:8px;padding:10px 16px;background:#16213e;border-bottom:1px solid #0f3460;flex-shrink:0}
-.tb .logo{font-size:20px;font-weight:700;color:#e94560;margin-right:12px}
-.tb .fname{color:#a0a0b0;font-size:13px;margin-right:12px;max-width:180px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+/* 工具栏 */
+.tb{display:flex;align-items:center;gap:0;padding:8px 14px;background:var(--tb);border-bottom:1px solid var(--bd);flex-shrink:0}
+.tb .logo{font-size:18px;font-weight:700;color:var(--red);margin-right:16px}
+.tb .sep{width:1px;height:22px;background:var(--bd);margin:0 8px}
+.fname{color:#a0a0b0;font-size:12px;margin-right:12px;max-width:150px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 
-/* 类型切换 — 大按钮 */
-.type-btn{padding:8px 20px;border:2px solid #0f3460;background:#1a1a2e;color:#888;border-radius:6px;cursor:pointer;font-size:14px;transition:all .15s}
-.type-btn:hover{background:#0f3460;border-color:#e94560;color:#e0e0e0}
-.type-btn.on{border-color:#e94560;background:#e94560;color:#fff;font-weight:600}
+/* 模式按钮 — 三大平级 */
+.mode-btn{padding:7px 18px;border:2px solid var(--bd);background:#1a1a2e;color:var(--dim);border-radius:6px;cursor:pointer;font-size:14px;font-weight:500;transition:all .15s;margin:0 2px}
+.mode-btn:first-of-type{border-radius:6px 0 0 6px;margin-left:0}
+.mode-btn:last-of-type{border-radius:0 6px 6px 0}
+.mode-btn:not(:first-of-type):not(:last-of-type){border-radius:0}
+.mode-btn:hover{background:var(--bd);color:var(--tx)}
+.mode-btn.on{border-color:var(--red);background:var(--red);color:#fff}
 
-/* 工具栏按钮 — 放大 */
-.tb-btn{padding:7px 12px;border:1px solid #0f3460;background:#1a1a2e;color:#c0c0d0;border-radius:5px;cursor:pointer;font-size:13px;white-space:nowrap;transition:all .1s}
-.tb-btn:hover{background:#0f3460;border-color:#e94560}
-.tb-btn.on{background:#e94560;border-color:#e94560;color:#fff}
-.tb-btn.primary{background:#e94560;border-color:#e94560;color:#fff}
-.tb-btn.primary:hover{background:#c0392b}
-.sep{width:1px;height:22px;background:#0f3460}
+.tb-btn{padding:6px 10px;border:1px solid var(--bd);background:#1a1a2e;color:var(--dim);border-radius:5px;cursor:pointer;font-size:12px;white-space:nowrap;transition:all .1s}
+.tb-btn:hover{background:var(--bd);border-color:var(--red);color:var(--tx)}
+.tb-btn.on{background:var(--red);border-color:var(--red);color:#fff}
+.tb-btn.small{padding:4px 8px;font-size:11px}
 
-/* 容器 */
-.ed-wrap{flex:1;overflow:auto;display:flex;justify-content:center;transition:background .3s}
-.ed-wrap.article{background:#6b7280;padding:24px 0}
-.ed-wrap.report{background:#0f0f1a;padding:40px 0;align-items:flex-start}
+/* 导出下拉 */
+.exp-wrap{position:relative}
+.exp-menu{display:none;position:absolute;top:100%;right:0;background:var(--tb);border:1px solid var(--bd);border-radius:6px;padding:4px 0;min-width:160px;z-index:100;margin-top:4px}
+.exp-menu.show{display:block}
+.exp-menu div{padding:8px 16px;cursor:pointer;font-size:13px;color:var(--dim)}
+.exp-menu div:hover{background:var(--bd);color:var(--tx)}
 
-/* 默认模式 */
-#ed{flex:1;overflow:auto;padding:28px 40px;outline:none;font-size:15px;line-height:1.9;max-width:900px;margin:0 auto;width:100%}
-#ed h1{font-size:28px;margin:32px 0 16px;color:#e94560}
-#ed h2{font-size:22px;margin:24px 0 12px;color:#f0a0b0}
+/* 主区域 */
+.main{flex:1;overflow:auto}
+
+/* 文章模式 — A4纸张 */
+.main.article{background:#6b7280;padding:32px 0;display:flex;justify-content:center;gap:32px;flex-wrap:wrap}
+#ed.article{width:210mm;min-height:297mm;padding:37mm 26mm 35mm 28mm;background:#fff;color:#000;box-shadow:0 2px 16px rgba(0,0,0,.15);font-family:FangSong,"仿宋",SimSun,serif;font-size:16pt;line-height:29pt;outline:none;margin:0}
+#ed.article p{margin:0;text-indent:2em}
+#ed.article h1{font-family:SimSun,"黑体",sans-serif;font-size:22pt;text-align:center;color:#000;margin:0 0 24pt;text-indent:0;line-height:1.4}
+#ed.article h2{font-family:SimSun,"黑体",sans-serif;font-size:16pt;text-indent:0;margin:16pt 0 8pt;color:#000}
+#ed.article h3{font-family:FangSong,"仿宋",serif;font-size:16pt;font-weight:bold;text-indent:2em;margin:8pt 0;color:#000}
+#ed.article table{width:100%;border-collapse:collapse;margin:12pt 0;font-size:14pt}
+#ed.article th,#ed.article td{border:1px solid #000;padding:4pt 8pt}
+#ed.article th{background:#f3f4f6;text-align:center}
+#ed.article td{text-indent:0}
+#ed.article li{text-indent:0}
+#ed.article ul,#ed.article ol{padding-left:2em}
+
+/* 演讲模式 — PPT画布 */
+.main.report{background:#0f0f1a;padding:40px 0;display:flex;justify-content:center;align-items:flex-start;gap:24px;flex-wrap:wrap}
+#ed.report{width:960px;min-height:540px;padding:48px 64px;background:var(--tb);color:var(--tx);border-radius:12px;border:1px solid var(--bd);font-size:16px;line-height:1.8;box-shadow:0 4px 24px rgba(0,0,0,.3);outline:none;margin:0}
+#ed.report h1{font-size:32px;color:var(--red);margin-bottom:16px}
+#ed.report h2{font-size:22px;color:var(--pink);margin:24px 0 12px}
+#ed.report p{color:#c0c0d0}
+#ed.report table th{background:#1a1a3e;color:var(--red)}
+#ed.report table td{border-color:#1a1a3e}
+
+/* 默认/源码模式 */
+#ed{outline:none;font-size:15px;line-height:1.9;color:var(--dim)}
+.main.default #ed{padding:28px 40px;max-width:900px;margin:0 auto}
+#ed h1{font-size:28px;margin:32px 0 16px;color:var(--red)}
+#ed h2{font-size:22px;margin:24px 0 12px;color:var(--pink)}
 #ed h3{font-size:18px;margin:18px 0 8px}
 #ed p{margin:8px 0}
 #ed strong{color:#fff}
 #ed table{border-collapse:collapse;width:100%;margin:16px 0}
-#ed th,#ed td{border:1px solid #0f3460;padding:8px 12px;min-width:60px}
-#ed th{background:#16213e;color:#e94560;font-weight:600}
+#ed th,#ed td{border:1px solid var(--bd);padding:8px 12px;min-width:60px}
+#ed th{background:var(--tb);color:var(--red);font-weight:600}
 #ed td{background:#1a1a2e}
-#ed td:focus,#ed th:focus{outline:2px solid #e94560;outline-offset:-2px}
-#ed code{background:#0f3460;padding:2px 6px;border-radius:3px;font-size:13px}
-#ed pre{background:#0a0a1a;padding:12px 16px;border-radius:6px}
+#ed code{background:var(--bd);padding:2px 6px;border-radius:3px;font-size:13px}
+#ed pre{background:#0a0a1a;padding:12px;border-radius:6px}
 #ed pre code{background:none;padding:0}
-#ed blockquote{border-left:3px solid #e94560;padding:8px 16px;margin:16px 0;background:rgba(233,69,96,0.06)}
+#ed blockquote{border-left:3px solid var(--red);padding:8px 16px;margin:16px 0;background:rgba(233,69,96,0.06)}
 #ed ul,#ed ol{padding-left:24px}
 #ed li{margin:4px 0}
 #ed img{max-width:100%;border-radius:8px;margin:16px 0}
-#ed hr{border:none;border-top:1px solid #0f3460;margin:28px 0}
-#ed a{color:#e94560}
+#ed hr{border:none;border-top:1px solid var(--bd);margin:28px 0}
+#ed a{color:var(--red)}
 
-/* 文章模式 */
-#ed.article,.ed-wrap.article #ed{width:210mm;min-height:297mm;max-width:none;margin:0 auto;padding:37mm 26mm 35mm 28mm;background:#fff;color:#000;box-shadow:0 2px 16px rgba(0,0,0,.15);font-family:FangSong,"仿宋_GB2312",SimSun,serif;font-size:16pt;line-height:29pt;outline:none}
-#ed.article p,.ed-wrap.article #ed p{margin:0;text-indent:2em}
-#ed.article h1,.ed-wrap.article #ed h1{font-family:SimSun,"华文中宋",serif;font-size:22pt;line-height:1.4;text-align:center;color:#000;margin:0 0 24pt;text-indent:0}
-#ed.article h2,.ed-wrap.article #ed h2{font-family:SimSun,"黑体",sans-serif;font-size:16pt;text-indent:0;margin:16pt 0 8pt;color:#000}
-#ed.article h3,.ed-wrap.article #ed h3{font-family:FangSong,"仿宋",serif;font-size:16pt;font-weight:bold;text-indent:2em;margin:8pt 0;color:#000}
-#ed.article table,.ed-wrap.article #ed table{width:100%;border-collapse:collapse;margin:12pt 0;font-size:14pt}
-#ed.article th,.ed-wrap.article #ed th,#ed.article td,.ed-wrap.article #ed td{border:1px solid #000;padding:4pt 8pt}
-#ed.article th,.ed-wrap.article #ed th{background:#f3f4f6;font-weight:bold;text-align:center;color:#000}
-#ed.article td,.ed-wrap.article #ed td{background:#fff;text-indent:0;color:#000}
-#ed.article li,.ed-wrap.article #ed li{text-indent:0}
-
-/* 报告模式 */
-.ed-wrap.report #ed,.ed-wrap.report #ed{width:960px;min-height:540px;max-width:none;margin:0 auto;padding:48px 64px;background:#16213e;color:#e0e0e0;border-radius:12px;border:1px solid #0f3460;font-size:16px;line-height:1.8;box-shadow:0 4px 24px rgba(0,0,0,.3)}
-.ed-wrap.report #ed h1{font-size:32px;color:#e94560}
-.ed-wrap.report #ed h2{font-size:22px;color:#f0a0b0}
-.ed-wrap.report #ed p{color:#c0c0d0}
-.ed-wrap.report #ed table th{background:#1a1a3e}
-.ed-wrap.report #ed table td{border-color:#1a1a3e;background:#16213e}
-
-/* 源码 */
-#src{display:none;flex:1;background:#0f0f1a;color:#c0c0d0;border:none;padding:16px;font-family:Consolas,monospace;font-size:13px;line-height:1.7;resize:none;outline:none}
+/* 源码模式 */
+.main.source .src-wrap{flex:1;padding:16px}
+.main.source #src{width:100%;height:100%;background:#0f0f1a;color:var(--dim);border:1px solid var(--bd);border-radius:6px;padding:16px;font-family:Consolas,monospace;font-size:13px;line-height:1.7;resize:none;outline:none}
 
 /* 状态栏 */
-.sb{display:flex;align-items:center;padding:4px 14px;background:#0f0f1a;border-top:1px solid #0f3460;font-size:11px;color:#555;flex-shrink:0;gap:12px}
+.sb{display:flex;align-items:center;padding:4px 14px;background:#0f0f1a;border-top:1px solid var(--bd);font-size:11px;color:#555;flex-shrink:0;gap:12px}
 .sb .dot{width:6px;height:6px;border-radius:50%;background:#4ecca3;display:inline-block}
-.sb .dot.d{background:#e94560}
-
-.ctx{display:none;position:fixed;background:#16213e;border:1px solid #0f3460;border-radius:6px;padding:4px 0;z-index:99;min-width:180px}
-.ctx div{padding:8px 16px;cursor:pointer;font-size:13px;color:#c0c0d0}
-.ctx div:hover{background:#0f3460;color:#fff}
+.sb .dot.d{background:var(--red)}
 </style></head>
 <body>
 
-<!-- 工具栏 — 全部功能可见 -->
 <div class="tb">
   <span class="logo">OMD</span>
+
+  <!-- 三大模式平级 -->
+  <button class="mode-btn on" id="mode-default">📝 默认</button>
+  <button class="mode-btn" id="mode-article">📄 文稿</button>
+  <button class="mode-btn" id="mode-report">📽 演讲</button>
+  <button class="mode-btn" id="mode-source">⟨⟩ 源码</button>
+
+  <span class="sep"></span>
   <span class="fname" id="fn">新文档.omd</span>
 
-  <!-- 类型：两个大按钮 -->
-  <button class="type-btn on" id="type-default">📝 默认</button>
-  <button class="type-btn" id="type-article">📄 文稿</button>
-  <button class="type-btn" id="type-report">📽 演讲</button>
+  <!-- 文稿设置 -->
+  <span id="article-opts" style="display:none;display:flex;gap:4px">
+    <select id="page-size" class="tb-btn small">
+      <option value="A4">A4</option>
+      <option value="Letter">Letter</option>
+    </select>
+  </span>
+
+  <!-- 演讲设置 -->
+  <span id="report-opts" style="display:none;display:flex;gap:4px">
+    <select id="slide-ratio" class="tb-btn small">
+      <option value="16:9">16:9</option>
+      <option value="4:3">4:3</option>
+    </select>
+  </span>
+
   <span class="sep"></span>
 
-  <!-- 格式 -->
   <button class="tb-btn" id="b-b"><b>B</b></button>
   <button class="tb-btn" id="b-i"><i>I</i></button>
   <button class="tb-btn" id="b-h1">H1</button>
   <button class="tb-btn" id="b-h2">H2</button>
-  <button class="tb-btn" id="b-list">≡ 列表</button>
-  <button class="tb-btn" id="b-quote">❝ 引用</button>
+  <button class="tb-btn" id="b-list">≡</button>
+  <button class="tb-btn" id="b-quote">❝</button>
   <button class="tb-btn" id="b-table">⊞ 表格</button>
-  <button class="tb-btn" id="b-img">🖼 图片</button>
-  <span class="sep"></span>
+  <button class="tb-btn" id="b-img">🖼</button>
 
-  <button class="tb-btn" id="b-src">⟨⟩ 源码</button>
   <span style="flex:1"></span>
-
   <button class="tb-btn" id="b-new">新建</button>
   <button class="tb-btn" id="b-open">打开</button>
-  <button class="tb-btn" style="border-color:#e94560;color:#e94560" id="b-save">保存</button>
-  <button class="tb-btn primary" id="b-export">导出</button>
+  <button class="tb-btn" style="border-color:var(--red);color:var(--red)" id="b-save">保存</button>
+  <div class="exp-wrap">
+    <button class="tb-btn" style="background:var(--red);border-color:var(--red);color:#fff" id="b-export">⤓ 导出 ▾</button>
+    <div class="exp-menu" id="exp-menu">
+      <div data-fmt="docx">📄 Word (.docx)</div>
+      <div data-fmt="xlsx">📊 Excel (.xlsx)</div>
+      <div data-fmt="pptx">📽 PPT (.pptx)</div>
+      <div data-fmt="pdf">📕 PDF (.pdf)</div>
+    </div>
+  </div>
 </div>
 
-<div class="ed-wrap default" id="wrap">
+<div class="main default" id="main">
   <div id="ed" contenteditable="true"></div>
-</div>
-<textarea id="src" spellcheck="false"></textarea>
-
-<div class="sb">
-  <span class="dot" id="dot"></span><span id="st">已保存</span>
-  <span style="margin-left:auto">OMD · 智慧生而共通</span>
-</div>
-
-<div class="ctx" id="ctx">
-  <div data-a="docx">📄 导出 Word</div>
-  <div data-a="xlsx">📊 导出 Excel</div>
-  <div data-a="pptx">📽 导出 PPT</div>
-  <div data-a="pdf">📕 打印 PDF</div>
 </div>
 
 <script>
-var mode='view',dirty=false,currentOMD='',title='新文档',docType='default';
-var ed=document.getElementById('ed'),src=document.getElementById('src'),
-    wrap=document.getElementById('wrap'),fn=document.getElementById('fn'),
+var mode='default',dirty=false,currentOMD='',title='新文档';
+var ed=document.getElementById('ed'),fn=document.getElementById('fn'),
     dot=document.getElementById('dot'),st=document.getElementById('st'),
-    ctx=document.getElementById('ctx');
+    main=document.getElementById('main');
 
 var DEFAULT_ARTICLE='---\ntitle: "公文文档"\ntags: [公文]\n---\n\n# 关于印发《品质管理办法》的通知\n\n各部门：\n\n为规范公司产品品质管理流程，确保产品符合客户要求及行业标准，特制定《品质管理办法》，现印发给你们，请遵照执行。\n\n## 第一章 总则\n\n### 第一条 目的\n\n为规范公司产品品质管理流程，确保产品符合客户要求及行业标准，特制定本办法。\n\n### 第二条 适用范围\n\n本办法适用于公司所有产品的设计、生产、检验、交付全过程。\n\n### 第三条 引用标准\n\n- ISO 9001:2015 质量管理体系\n- GB/T 19001-2016 质量管理体系要求\n\n## 第二章 职责分工\n\n### 第四条 品质管理部门职责\n\n品质管理部负责制定和修订品质管理制度，组织产品检验和测试，处理客户投诉和品质异常。\n\n### 第五条 生产部门职责\n\n生产部门须严格执行品质管理制度，做好首检、自检、互检工作，确保产品质量符合标准。\n\n## 第三章 检验标准\n\n| 项目 | 检验标准 | 检验方法 | 频次 |\n| --- | --- | --- | --- |\n| 外观 | 无划痕、无变形 | 目视 | 每批 |\n| 尺寸 | ±0.1mm | 卡尺测量 | 首件 |\n| 性能 | 符合规格书 | 测试台 | 每批 |\n\n## 第四章 附则\n\n本办法自发布之日起生效，由品质管理部负责解释。此前相关制度同时废止。\n\n<!--OMD\ndocument:\n  font: "仿宋"\n  font_size: 16\n  page_size: "A4"\n  page_margin: [37, 35, 28, 26]\n-->\n';
 
@@ -155,35 +171,67 @@ function wysiwygToMD(el){var p=[];function w(n){if(n.nodeType===3){p.push(n.text
 
 function getOMDTail(omd){var m=omd.match(/<!--OMD\n?([\s\S]*?)\n?-->/);return m?'<!--OMD\n'+m[1].trim()+'\n-->':'<!--OMD\n-->'}
 function sync(){var tail=getOMDTail(currentOMD);currentOMD='---\ntitle: "'+title+'"\ntags: []\n---\n\n'+wysiwygToMD(ed)+'\n\n'+tail}
-function refresh(){var d=parseOMD(currentOMD);if(mode==='view')ed.innerHTML=mdToHTML(d.body);if(mode==='src')src.value=currentOMD;title=d.meta.title||'新文档';fn.textContent=title+'.omd'}
+function refresh(){var d=parseOMD(currentOMD);if(mode!=='source')ed.innerHTML=mdToHTML(d.body);if(mode==='source')src.value=currentOMD;title=d.meta.title||'新文档';fn.textContent=title+'.omd'}
 function mark(d){dirty=d;dot.className='dot'+(d?' d':'');st.textContent=d?'已修改':'已保存'}
 
-function setMode(m){if(mode==='view'&&m!=='view')sync();if(mode==='src'&&m!=='src'){currentOMD=src.value;title=(currentOMD.match(/^title:\s*"([^"]+)"/m)||[])[1]||title}mode=m;ed.style.display=m==='view'?'block':'none';src.style.display=m==='src'?'block':'none';refresh()}
+// 模式切换
+function setMode(m){
+  if(mode!=='source'&&m==='source')sync();
+  if(mode==='source'&&m!=='source'){currentOMD=src.value;title=(currentOMD.match(/^title:\s*"([^"]+)"/m)||[])[1]||title}
+  mode=m;
 
-// 类型切换
-function setType(t){
-  docType=t;
+  // 清理
+  main.innerHTML='';
+  main.className='main '+m;
+  ed.className='';
+  ed.removeAttribute('style');
+  ed.setAttribute('contenteditable','true');
+  main.appendChild(ed);
+
   // 按钮状态
-  document.getElementById('type-default').className='type-btn'+(t==='default'?' on':'');
-  document.getElementById('type-article').className='type-btn'+(t==='article'?' on':'');
-  document.getElementById('type-report').className='type-btn'+(t==='report'?' on':'');
-  // 容器样式
-  wrap.className='ed-wrap '+t;
-  ed.className=t;
-  // 切换模板
-  if(t==='article'&&currentOMD===DEFAULT){currentOMD=DEFAULT_ARTICLE;refresh();mark(false)}
-  if(t!=='article'&&currentOMD===DEFAULT_ARTICLE){currentOMD=DEFAULT;refresh();mark(false)}
+  document.querySelectorAll('.mode-btn').forEach(function(b){b.className='mode-btn'});
+  document.getElementById('mode-'+m).className='mode-btn on';
+
+  // 各模式特殊处理
+  if(m==='article'){
+    ed.className='article';
+    main.style.display='flex';main.style.flexWrap='wrap';main.style.justifyContent='center';main.style.gap='32px';
+    document.getElementById('article-opts').style.display='flex';
+    document.getElementById('report-opts').style.display='none';
+    if(currentOMD===DEFAULT){currentOMD=DEFAULT_ARTICLE;refresh();mark(false)}
+  }else if(m==='report'){
+    ed.className='report';
+    main.style.display='flex';main.style.flexWrap='wrap';main.style.justifyContent='center';main.style.gap='24px';
+    document.getElementById('report-opts').style.display='flex';
+    document.getElementById('article-opts').style.display='none';
+    if(currentOMD===DEFAULT_ARTICLE&&!dirty){currentOMD=DEFAULT;refresh();mark(false)}
+  }else if(m==='source'){
+    main.className='main source';
+    main.style.display='flex';
+    main.innerHTML='<div class="src-wrap"><textarea id="src" spellcheck="false"></textarea></div>';
+    document.getElementById('article-opts').style.display='none';
+    document.getElementById('report-opts').style.display='none';
+    refresh();
+    var src=document.getElementById('src');
+    src.value=currentOMD;
+    src.addEventListener('input',function(){mark(true)});
+    return;
+  }else{
+    document.getElementById('article-opts').style.display='none';
+    document.getElementById('report-opts').style.display='none';
+  }
+  refresh();
 }
 
 function save(){sync();var b=new Blob([currentOMD],{type:'text/markdown'});var u=URL.createObjectURL(b);var a=document.createElement('a');a.href=u;a.download=title+'.omd';a.click();URL.revokeObjectURL(u);mark(false);refresh()}
 function openFile(){var i=document.createElement('input');i.type='file';i.accept='.omd,.md,.txt';i.onchange=function(e){var f=e.target.files[0];if(!f)return;var r=new FileReader();r.onload=function(ev){currentOMD=ev.target.result;mark(false);refresh()};r.readAsText(f)};i.click()}
 function exportFmt(f){sync();fetch('/api/export/'+f,{method:'POST',body:currentOMD}).then(function(r){return r.blob()}).then(function(b){var u=URL.createObjectURL(b);var a=document.createElement('a');a.href=u;a.download=title+'.'+f;a.click();URL.revokeObjectURL(u)}).catch(function(){alert('导出服务未启动')})}
 
-// 事件绑定
-document.getElementById('type-default').onclick=function(){setType('default')};
-document.getElementById('type-article').onclick=function(){setType('article')};
-document.getElementById('type-report').onclick=function(){setType('report')};
-document.getElementById('b-src').onclick=function(){setMode(mode==='src'?'view':'src')};
+// 事件
+document.getElementById('mode-default').onclick=function(){setMode('default')};
+document.getElementById('mode-article').onclick=function(){setMode('article')};
+document.getElementById('mode-report').onclick=function(){setMode('report')};
+document.getElementById('mode-source').onclick=function(){setMode('source')};
 document.getElementById('b-b').onclick=function(){document.execCommand('bold');ed.focus();mark(true)};
 document.getElementById('b-i').onclick=function(){document.execCommand('italic');ed.focus();mark(true)};
 document.getElementById('b-h1').onclick=function(){document.execCommand('formatBlock',false,'h1');mark(true)};
@@ -195,19 +243,21 @@ document.getElementById('b-table').onclick=function(){
   document.execCommand('insertHTML',false,t);mark(true);
 };
 document.getElementById('b-img').onclick=function(){var u=prompt('图片 URL（或拖拽图片到编辑器）:');if(u)document.execCommand('insertImage',false,u);mark(true)};
-document.getElementById('b-new').onclick=function(){currentOMD=DEFAULT;setType('default');mark(false);refresh()};
+document.getElementById('b-new').onclick=function(){currentOMD=DEFAULT;setMode('default');mark(false);refresh()};
 document.getElementById('b-open').onclick=openFile;
 document.getElementById('b-save').onclick=save;
-document.getElementById('b-export').onclick=function(e){ctx.style.display='block';ctx.style.left=e.clientX+'px';ctx.style.top=(e.clientY+20)+'px'};
 
+// 导出下拉
+var expBtn=document.getElementById('b-export'),expMenu=document.getElementById('exp-menu');
+expBtn.onclick=function(e){e.stopPropagation();expMenu.classList.toggle('show')};
+expMenu.onclick=function(e){var f=e.target.getAttribute('data-fmt');if(f==='pdf'){sync();window.print()}else if(f)exportFmt(f);expMenu.classList.remove('show')};
+document.addEventListener('click',function(){expMenu.classList.remove('show')});
+
+// 拖拽图片
 ed.addEventListener('drop',function(e){e.preventDefault();var f=e.dataTransfer.files[0];if(f&&f.type.startsWith('image/')){var r=new FileReader();r.onload=function(ev){document.execCommand('insertImage',false,ev.target.result);mark(true)};r.readAsDataURL(f)}});
 ed.addEventListener('dragover',function(e){e.preventDefault()});
 ed.addEventListener('input',function(){mark(true)});
-src.addEventListener('input',function(){mark(true)});
 
-document.addEventListener('contextmenu',function(e){e.preventDefault();ctx.style.display='block';ctx.style.left=e.clientX+'px';ctx.style.top=e.clientY+'px'});
-document.addEventListener('click',function(e){if(!ctx.contains(e.target))ctx.style.display='none'});
-ctx.onclick=function(e){var a=e.target.getAttribute('data-a');if(a==='pdf'){sync();window.print()}else if(a)exportFmt(a);ctx.style.display='none'};
 document.addEventListener('keydown',function(e){if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.preventDefault();save()}});
 
 refresh();
