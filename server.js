@@ -75,6 +75,51 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  // API: MCP 代理
+  if (req.method === 'POST' && url.pathname === '/api/mcp') {
+    let body = '';
+    req.on('data', d => body += d);
+    req.on('end', async () => {
+      try {
+        const { tool, args } = JSON.parse(body);
+        const { spawn } = require('child_process');
+        const cp = spawn('node', [path.join(__dirname, 'mcp-server', 'dist', 'index.js')], {
+          stdio: ['pipe', 'pipe', 'pipe'],
+          env: { ...process.env, OMD_VAULT_PATH: 'E:/Hermes/Hermes/' }
+        });
+        let out = '', errOut = '';
+        cp.stdout.on('data', d => out += d);
+        cp.stderr.on('data', d => errOut += d);
+        cp.stdin.write(JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'initialize', params: { protocolVersion: '1.0', capabilities: {}, clientInfo: { name: 'editor', version: '1.0' } } }) + '\n');
+        await new Promise(r => setTimeout(r, 300));
+        cp.stdin.write(JSON.stringify({ jsonrpc: '2.0', method: 'notifications/initialized' }) + '\n');
+        await new Promise(r => setTimeout(r, 200));
+        cp.stdin.write(JSON.stringify({ jsonrpc: '2.0', id: 2, method: 'tools/call', params: { name: tool, arguments: args || {} } }) + '\n');
+        await new Promise(r => setTimeout(r, 1000));
+        cp.stdin.end();
+        await new Promise(r => setTimeout(r, 500));
+        cp.kill();
+        // 解析最后一条 JSON 响应
+        var lines = out.split('\n').filter(l => l.trim());
+        var result = null;
+        for (var i = lines.length - 1; i >= 0; i--) {
+          try { var p = JSON.parse(lines[i]); if (p.id === 2) { result = p.result; break; } } catch (e) {}
+        }
+        if (result) {
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify(result));
+        } else {
+          res.writeHead(500);
+          res.end(JSON.stringify({ error: 'MCP call failed', stderr: errOut }));
+        }
+      } catch (e) {
+        res.writeHead(500);
+        res.end(JSON.stringify({ error: e.message }));
+      }
+    });
+    return;
+  }
+
   // 默认：返回 index.html
   const filePath = path.join(__dirname, 'index.html');
   const html = fs.readFileSync(filePath, 'utf-8');
