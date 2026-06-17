@@ -128,7 +128,7 @@ body{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Microsof
 .preso-overlay.show{display:flex}
 .preso-bar{display:flex;align-items:center;padding:8px 20px;color:#888;font-size:13px;flex-shrink:0}
 .preso-stage{flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden}
-.preso-stage .slide-page{width:80vw;max-width:1200px;min-height:60vh;max-height:85vh;overflow:auto;font-size:22px;line-height:2;padding:48px 64px;background:#1a1a2e;color:#e0e0e0;border-radius:12px;border:1px solid #333}
+.preso-stage .slide-page{width:80vw;max-width:1200px;min-height:60vh;max-height:85vh;overflow:auto;font-size:22px;line-height:2;padding:48px 64px;background:var(--tb);color:var(--tx);border-radius:12px;border:1px solid var(--bd)}
 .preso-stage .slide-page h1{font-size:42px;color:#e94560}
 .preso-stage .slide-page h2{font-size:28px;color:#f0a0b0}
 .preso-nav button:hover{background:rgba(233,69,96,.5)!important}
@@ -147,11 +147,11 @@ body{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Microsof
   <button class="mode-btn" id="mode-source">⟨⟩ 源码</button>
   <span class="sep"></span>
   <span id="article-opts" style="display:none;gap:4px">
-    <select id="page-size" style="padding:5px 8px;border:1px solid var(--bd);background:#1a1a2e;color:var(--dim);border-radius:4px;font-size:12px"><option>A4</option><option>Letter</option></select>
+    <select id="page-size" style="padding:5px 8px;border:1px solid var(--bd);background:var(--input-bg);color:var(--dim);border-radius:4px;font-size:12px"><option>A4</option><option>Letter</option></select>
   </span>
   <span id="report-opts" style="display:none;gap:4px">
-    <select id="slide-ratio" style="padding:5px 8px;border:1px solid var(--bd);background:#1a1a2e;color:var(--dim);border-radius:4px;font-size:12px"><option>16:9</option><option>4:3</option></select>
-    <select id="slide-theme" style="padding:5px 8px;border:1px solid var(--bd);background:#1a1a2e;color:var(--dim);border-radius:4px;font-size:12px"><option value="dark">暗色</option><option value="nebula">星云</option><option value="gradient">渐变</option></select>
+    <select id="slide-ratio" style="padding:5px 8px;border:1px solid var(--bd);background:var(--input-bg);color:var(--dim);border-radius:4px;font-size:12px"><option>16:9</option><option>4:3</option></select>
+    <select id="slide-theme" style="padding:5px 8px;border:1px solid var(--bd);background:var(--input-bg);color:var(--dim);border-radius:4px;font-size:12px"><option value="dark">🌙 暗色</option><option value="nebula">🌌 星云</option><option value="gradient">渐变</option></select>
     <button class="tb-btn" id="b-slide-play" style="background:var(--red);border-color:var(--red);color:#fff;display:none">▶ 播放</button>
   </span>
   <span class="sep"></span>
@@ -327,7 +327,7 @@ function setMode(m){
     buildSidebar(m);
     return;
   }else if(m==='source'){
-    ma.innerHTML='<textarea id="ed" spellcheck="false" style="width:100%;height:100%;background:#0f0f1a;color:#c0c0d0;border:1px solid var(--bd);border-radius:6px;padding:16px;font-family:Consolas,monospace;font-size:13px;line-height:1.7;resize:none;outline:none">'+esc(currentOMD)+'</textarea>';
+    ma.innerHTML='<textarea id="ed" spellcheck="false" style="width:100%;height:100%;background:var(--source-ed);color:var(--source-color);border:1px solid var(--bd);border-radius:6px;padding:16px;font-family:Consolas,monospace;font-size:13px;line-height:1.7;resize:none;outline:none">'+esc(currentOMD)+'</textarea>';
     ed=document.getElementById('ed');ed.addEventListener('input',function(){mark(true)});
     buildSidebar(m);
     return;
@@ -388,7 +388,7 @@ function openFile(){
 }
 function exportFmt(f){sync();fetch('/api/export/'+f,{method:'POST',body:currentOMD}).then(function(r){return r.blob()}).then(function(b){var u=URL.createObjectURL(b);var a=document.createElement('a');a.href=u;a.download=title+'.'+f;a.click();URL.revokeObjectURL(u)}).catch(function(){alert('导出服务未启动')})}
 function handleDrop(e){e.preventDefault();var f=e.dataTransfer.files[0];if(f&&f.type.startsWith('image/')){var r=new FileReader();r.onload=function(ev){document.execCommand('insertImage',false,ev.target.result);mark(true)};r.readAsDataURL(f)}}
-function bindEditorEvents(){ed.addEventListener('drop',handleDrop);ed.addEventListener('dragover',function(e){e.preventDefault()});ed.addEventListener('input',function(){mark(true)})}
+function bindEditorEvents(){if(!ed)return;ed.addEventListener('drop',handleDrop);ed.addEventListener('dragover',function(e){e.preventDefault()});ed.addEventListener('input',function(){mark(true)})}
 
 // 事件
 document.getElementById('mode-default').onclick=function(){setMode('default')};
