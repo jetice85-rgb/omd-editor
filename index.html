@@ -85,7 +85,7 @@ body{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Microsof
 
 
 /* 文稿模式 */
-.main-area.article{background:#e0e0e0;padding:80px 0 80px;flex-direction:column;align-items:center;gap:0}
+.main-area.article{background:#e0e0e0;padding:80px 0 80px;flex-direction:column;align-items:center;justify-content:flex-start;gap:0}
 .article-page{width:min(210mm, calc(100vw - 260px));min-height:297mm;margin-top:0;padding:37mm 28mm 35mm 28mm;background:#fff;color:#000;border:1px solid #d4d4d4;box-shadow:0 2px 8px rgba(0,0,0,.08),0 8px 32px rgba(0,0,0,.12);font-family:FangSong,"仿宋",SimSun,serif;font-size:16pt;line-height:29pt;outline:none;position:relative;margin-bottom:24px}
 .article-page p{margin:0;text-indent:2em}
 .article-page h1{font-family:SimSun,"黑体",sans-serif;font-size:22pt;text-align:center;color:#000;margin:0 0 24pt;text-indent:0}
@@ -100,7 +100,7 @@ body{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Microsof
 .article-pages-wrap .article-page{box-shadow:0 2px 8px rgba(0,0,0,.08),0 8px 32px rgba(0,0,0,.12)}
 
 /* 演讲模式 */
-.main-area.report{background:var(--report-bg);padding:24px;display:flex;align-items:center;justify-content:center}
+.main-area.report{background:var(--report-bg);padding:24px;display:flex;align-items:center;justify-content:flex-start}
 .report-canvas .slide-page{box-shadow:0 4px 24px rgba(0,0,0,.3);width:100%;max-width:960px;aspect-ratio:16/9;min-height:auto;overflow:hidden}
 .slide-page{padding:48px 64px;background:var(--tb);color:var(--tx);border-radius:12px;border:1px solid var(--bd);font-size:18px;line-height:1.8;box-shadow:0 4px 24px rgba(0,0,0,.3);outline:none;position:relative}
 .slide-page h1{font-size:36px;color:var(--red);margin-bottom:20px}
@@ -375,6 +375,7 @@ function setMode(m){
     return;
   }else if(m==='article'){
     ma.style.padding='';
+    ma.scrollTop=0;
     renderArticlePages();
     buildSidebar(m);
     return;
