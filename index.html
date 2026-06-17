@@ -28,15 +28,15 @@ body.light{
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--tx);height:100vh;overflow:hidden;display:flex;flex-direction:column}
 
-.tb{display:flex;align-items:center;gap:8px;padding:8px 14px;background:var(--tb);border-bottom:1px solid var(--bd);flex-shrink:0;overflow-x:auto;min-height:46px}
-.tb .logo{font-size:20px;font-weight:700;color:var(--red);margin-right:10px}
-.tb .sep{width:1px;height:22px;background:var(--bd);margin:0 2px;flex-shrink:0}
+.tb{display:flex;align-items:center;gap:10px;padding:10px 18px;background:var(--tb);border-bottom:1px solid var(--bd);flex-shrink:0;overflow-x:auto;min-height:52px}
+.tb .logo{font-size:24px;font-weight:700;color:var(--red);margin-right:10px}
+.tb .sep{width:1px;height:26px;background:var(--bd);margin:0 2px;flex-shrink:0}
 
-.mode-btn{height:34px;padding:0 14px;border:1px solid var(--bd);background:var(--btn-bg);color:var(--dim);border-radius:6px;cursor:pointer;font-size:13px;font-weight:500;white-space:nowrap}
+.mode-btn{height:40px;padding:0 16px;border:1px solid var(--bd);background:var(--btn-bg);color:var(--dim);border-radius:6px;cursor:pointer;font-size:15px;font-weight:500;white-space:nowrap}
 .mode-btn:hover{background:rgba(255,255,255,.06);color:var(--tx)}
 .mode-btn.on{border-color:var(--red);background:rgba(233,69,96,.14);color:var(--tx)}
 
-.tb-btn{height:34px;padding:0 10px;border:1px solid var(--bd);background:var(--btn-bg);color:#b8c0cc;border-radius:5px;cursor:pointer;font-size:13px;white-space:nowrap;display:inline-flex;align-items:center}
+.tb-btn{height:38px;padding:0 14px;border:1px solid var(--bd);background:var(--btn-bg);color:#b8c0cc;border-radius:5px;cursor:pointer;font-size:14px;white-space:nowrap;display:inline-flex;align-items:center}
 .tb-btn:hover{background:rgba(255,255,255,.06);color:var(--tx)}
 .exp-wrap{position:relative}
 .exp-menu{display:none;position:absolute;top:calc(100% + 4px);right:0;background:var(--tb);border:1px solid var(--bd);border-radius:6px;padding:4px 0;min-width:170px;z-index:100}
@@ -46,7 +46,7 @@ body{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Microsof
 
 /* 主布局：左栏+右主区 */
 .layout{flex:1;display:flex;overflow:hidden}
-.sidebar{width:220px;background:var(--sb);border-right:1px solid var(--bd);display:flex;flex-direction:column;overflow-y:auto;flex-shrink:0}
+.sidebar{width:260px;background:var(--sb);border-right:1px solid var(--bd);display:flex;flex-direction:column;overflow-y:auto;flex-shrink:0}
 .sidebar h3{padding:12px 16px 6px;font-size:12px;color:var(--dim);text-transform:uppercase;letter-spacing:0}
 .sidebar .item{padding:8px 16px;cursor:pointer;font-size:13px;color:var(--sidebar-item);border-left:3px solid transparent;transition:.1s}
 .sidebar .item:hover{background:var(--sidebar-hover);color:var(--tx)}
@@ -55,6 +55,9 @@ body{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Microsof
 .sb-tab{flex:1;padding:10px 0;border:none;background:transparent;color:var(--dim);cursor:pointer;font-size:16px;border-bottom:2px solid transparent}
 .sb-tab.on{border-bottom-color:var(--red);color:var(--tx)}
 .main-area{flex:1;overflow:auto;display:flex;justify-content:center}
+.main-area.zoomable{--zoom:1}
+.main-area.zoomable>*{transform:scale(var(--zoom));transform-origin:top left}
+.main-area.zoomable .article-page{box-shadow:0 2px 16px rgba(0,0,0,.2)}
 
 /* 灵感流模式 */
 .block-stream{flex:1;overflow-y:auto;padding:16px}
@@ -78,7 +81,7 @@ body{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Microsof
 
 
 /* 文稿模式 */
-.main-area.article{background:var(--article-bg);padding:32px 24px;flex-direction:column;align-items:center;gap:32px}
+.main-area.article{background:var(--article-bg);padding:48px 24px 32px;flex-direction:column;align-items:center;gap:32px}
 .article-page{width:min(210mm, calc(100vw - 260px));min-height:297mm;padding:37mm 26mm 35mm 28mm;background:#fff;color:#000;box-shadow:0 2px 16px rgba(0,0,0,.2);font-family:FangSong,"仿宋",SimSun,serif;font-size:16pt;line-height:29pt;outline:none;position:relative}
 .article-page p{margin:0;text-indent:2em}
 .article-page h1{font-family:SimSun,"黑体",sans-serif;font-size:22pt;text-align:center;color:#000;margin:0 0 24pt;text-indent:0}
@@ -89,6 +92,8 @@ body{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Microsof
 .article-page th{background:#f3f4f6;text-align:center}
 .article-page td{text-indent:0}
 .article-page .page-num{position:absolute;bottom:8mm;left:0;right:0;text-align:center;font-size:10pt;color:#999;font-family:sans-serif}
+.article-pages-wrap{display:flex;flex-wrap:wrap;justify-content:center;gap:24px;width:100%}
+.article-pages-wrap .article-page{box-shadow:0 4px 20px rgba(0,0,0,.25),0 1px 4px rgba(0,0,0,.15)}
 
 /* 演讲模式 */
 .main-area.report{background:var(--report-bg);padding:32px 24px;flex-direction:column;align-items:center;gap:24px}
@@ -120,7 +125,7 @@ body{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Microsof
 .ai-dot{width:6px;height:6px;border-radius:50%;background:#4ecca3;flex-shrink:0}
 .ai-dot.off{background:var(--dim)}
 
-.sb{display:flex;align-items:center;height:28px;padding:0 16px;background:var(--status-bg);border-top:1px solid var(--bd);font-size:12px;color:var(--dim);flex-shrink:0;gap:10px}
+.sb{display:flex;align-items:center;height:32px;padding:0 16px;background:var(--status-bg);border-top:1px solid var(--bd);font-size:13px;color:var(--dim);flex-shrink:0;gap:10px}
 .sb .dot{width:7px;height:7px;border-radius:50%;background:#4ecca3;display:inline-block}
 .sb .dot.d{background:var(--red)}
 
@@ -176,7 +181,7 @@ body{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Microsof
 <div class="layout" id="layout">
   <div class="sidebar" id="sidebar">
     <div style="display:flex;border-bottom:1px solid var(--bd)">
-      <button class="sb-tab on" id="tab-outline">📑</button>
+      <button class="sb-tab on" id="tab-outline">🖼</button>
       <button class="sb-tab" id="tab-vault">📁</button>
     </div>
     <div id="sidebar-content"></div>
@@ -226,8 +231,7 @@ function buildSidebar(m){if(sidebarTab==="vault"){loadVault();return}
     SAMPLE_NOTES.forEach(function(n){sb.innerHTML+='<div class="item"><div>'+n.t+'</div><div class="sub">'+n.s+'</div></div>'});
     sb.innerHTML+='<div class="ai-status"><span class="ai-dot"></span> AI 已索引 3 篇</div>';
   }else if(m==='article'){
-    var outline=extractOutline(d.body);
-    outline.forEach(function(o){sb.innerHTML+='<div class="item" style="padding-left:'+(12+o.level*16)+'px">'+'H'+o.level+' '.repeat(o.level-1)+o.text+'</div>'});
+    renderThumbnails();
   }else if(m==='report'){
     var slides=d.body.split(/---slide---/);if(slides.length===1)slides=d.body.split(/\n(?=# )/);
     slides.forEach(function(s,i){var t=s.trim().split('\n')[0].replace(/^#+\s*/,'').slice(0,20);sb.innerHTML+='<div class="item active'+(i===0?' active':'')+'">'+(i+1)+'. '+(t||'幻灯片'+(i+1))+'</div>'});
@@ -241,6 +245,24 @@ function buildSidebar(m){if(sidebarTab==="vault"){loadVault();return}
 }
 
 
+function renderThumbnails(){
+  sb.innerHTML='<h3>🖼 缩略图</h3>';
+  var pages=ma.querySelectorAll('.article-page');
+  pages.forEach(function(pg,i){
+    var h=pg.cloneNode(true);
+    var num=h.querySelector('.page-num');if(num)num.remove();
+    h.style.cssText='width:120px;height:170px;overflow:hidden;font-size:5pt;line-height:7pt;padding:8px;transform:scale(1);margin:0;position:static;box-shadow:0 1px 4px rgba(0,0,0,.2);pointer-events:none';
+    var wrapper=document.createElement('div');
+    wrapper.className='item thumb-item';
+    wrapper.setAttribute('data-page',i);
+    wrapper.style.cssText='padding:4px;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;border-left:3px solid transparent';
+    wrapper.innerHTML='<div style="width:120px;height:170px;overflow:hidden;border-radius:2px;border:2px solid transparent">'+h.outerHTML+'</div><span style="font-size:11px;color:var(--dim)">第'+(i+1)+'页</span>';
+    wrapper.onclick=function(){var p=ma.querySelector('.article-page[data-page="'+i+'"]');if(p)p.scrollIntoView({behavior:'smooth',block:'start'})};
+    sb.appendChild(wrapper);
+  });
+}
+
+
 // Vault 文件列表
 function loadVault(){
   sb.innerHTML='<h3>📁 Vault</h3><div class="item" style="color:var(--dim)">加载中...</div>';
@@ -250,11 +272,58 @@ function loadVault(){
       var text=data.content&&data.content[0]?data.content[0].text:'{}';
       var list=JSON.parse(text);
       sb.innerHTML='<h3>📁 Vault ('+list.count+')</h3>';
-      (list.files||[]).forEach(function(f){
-        sb.innerHTML+='<div class="item" onclick="loadVaultFile(\''+f.path+'\')" title="'+f.path+'">'+f.title+'<div class="sub">'+(f.size/1024).toFixed(1)+'KB · '+f.modified.slice(0,10)+'</div></div>';
-      });
+      renderVaultTree(list.files||[]);
     })
     .catch(function(){sb.innerHTML='<h3>📁 Vault</h3><div class="item" style="color:var(--red)">连接失败</div>'});
+}
+
+function buildFolderTree(files){
+  var root={};
+  files.forEach(function(f){
+    var parts=f.path.split('/'),cur=root;
+    for(var i=0;i<parts.length-1;i++){
+      if(!cur[parts[i]])cur[parts[i]]={_children:{}};
+      cur=cur[parts[i]]._children;
+    }
+    cur[parts[parts.length-1]]=f;
+  });
+  return root;
+}
+
+function renderVaultTree(files){
+  var tree=buildFolderTree(files);
+  renderTreeNode(tree,sb,0);
+}
+
+function renderTreeNode(node,parent,depth){
+  var folders=[],files=[];
+  Object.keys(node).forEach(function(k){
+    if(k==='_children')return;
+    if(node[k]._children)folders.push({name:k,children:node[k]._children});
+    else files.push(node[k]);
+  });
+  folders.sort(function(a,b){return a.name.localeCompare(b.name)});
+  files.sort(function(a,b){return (a.title||a.path).localeCompare(b.title||b.path)});
+  folders.forEach(function(f){
+    var div=document.createElement('div');
+    div.className='item vault-folder';
+    div.style.cssText='padding-left:'+(12+depth*16)+'px;cursor:pointer';
+    div.innerHTML='📁 '+f.name+' <span style="font-size:10px;color:var(--dim)">▶</span>';
+    var childrenDiv=document.createElement('div');
+    childrenDiv.style.display='none';
+    renderTreeNode(f.children,childrenDiv,depth+1);
+    parent.appendChild(div);
+    parent.appendChild(childrenDiv);
+    div.onclick=function(e){e.stopPropagation();var show=childrenDiv.style.display==='none';childrenDiv.style.display=show?'block':'none';div.querySelector('span').textContent=show?'▼':'▶'};
+  });
+  files.forEach(function(f){
+    var div=document.createElement('div');
+    div.className='item vault-file';
+    div.style.cssText='padding-left:'+(12+depth*16)+'px;cursor:pointer';
+    div.innerHTML='📄 '+(f.title||f.path.split('/').pop())+'<div class="sub">'+(f.size/1024).toFixed(1)+'KB · '+f.modified.slice(0,10)+'</div>';
+    div.onclick=function(){loadVaultFile(f.path)};
+    parent.appendChild(div);
+  });
 }
 
 function loadVaultFile(p){
@@ -317,7 +386,7 @@ function setMode(m){
     buildSidebar(m);
     return;
   }else if(m==='article'){
-    ma.style.padding='32px 0';
+    ma.style.padding='48px 0';
     renderArticlePages();
     buildSidebar(m);
     return;
@@ -342,7 +411,10 @@ function renderArticlePages(){
   var d=parseOMD(currentOMD),blocks=d.body.split('\n\n'),pages=[],cur='',c=0;
   for(var i=0;i<blocks.length;i++){cur+=(cur?'\n\n':'')+blocks[i];c++;if(c>=15||i===blocks.length-1){pages.push(cur);cur='';c=0}}
   if(!pages.length)pages.push('');
-  pages.forEach(function(pg,i){ma.innerHTML+='<div class="article-page" data-page="'+i+'" contenteditable="true">'+mdToHTML(pg)+'<div class="page-num">— '+(i+1)+' —</div></div>'});
+  var useDual=zoomLevel<0.8&&window.innerWidth>900;
+  if(useDual)ma.innerHTML='<div class="article-pages-wrap" id="article-pages-wrap"></div>';
+  var wrap=useDual?document.getElementById('article-pages-wrap'):ma;
+  pages.forEach(function(pg,i){var h='<div class="article-page" data-page="'+i+'" contenteditable="true">'+mdToHTML(pg)+'<div class="page-num">— '+(i+1)+' —</div></div>';if(useDual){wrap.innerHTML+=h}else{ma.innerHTML+=h}});
 }
 
 function renderReportPages(){
@@ -515,6 +587,13 @@ function autosaveLoad(){try{var d=JSON.parse(localStorage.getItem(AUTOSAVE_KEY))
 setInterval(function(){if(dirty)autosaveSave()},30000);
 autosaveLoad();
 function applySlideTheme(theme){document.querySelector('.main-area').className=document.querySelector('.main-area').className.replace(/slide-theme-\w+/g,'');if(theme!=='dark')document.querySelector('.main-area').classList.add('slide-theme-'+theme);document.getElementById('preso-stage').className=document.getElementById('preso-stage').className.replace(/slide-theme-\w+/g,'');if(theme!=='dark')document.getElementById('preso-stage').classList.add('slide-theme-'+theme)}
+
+var zoomLevel=1,zoomTimer=null;
+function updateZoomClass(){if(mode==='article'||mode==='report'){ma.classList.add('zoomable')}else{ma.classList.remove('zoomable')}}
+function showZoom(){clearTimeout(zoomTimer);st.textContent=Math.round(zoomLevel*100)+'%';zoomTimer=setTimeout(function(){st.textContent=dirty?'已修改':'已保存'},1200)}
+ma.addEventListener('wheel',function(e){if(!e.ctrlKey)return;if(mode!=='article'&&mode!=='report')return;e.preventDefault();var rect=ma.getBoundingClientRect();var mx=e.clientX-rect.left+ma.scrollLeft;var my=e.clientY-rect.top+ma.scrollTop;var old=zoomLevel;zoomLevel+=e.deltaY<0?0.1:-0.1;zoomLevel=Math.max(0.5,Math.min(2,Math.round(zoomLevel*10)/10));if(zoomLevel===old)return;var ratio=zoomLevel/old;ma.style.setProperty('--zoom',zoomLevel);ma.scrollLeft=mx*ratio-(e.clientX-rect.left);ma.scrollTop=my*ratio-(e.clientY-rect.top);showZoom()},{passive:false});
+var _origSetMode=setMode;setMode=function(m){_origSetMode(m);updateZoomClass()};
+updateZoomClass();
 </script>
 </body>
 </html>
