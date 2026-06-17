@@ -123,6 +123,19 @@ body{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Microsof
 .sb{display:flex;align-items:center;height:28px;padding:0 16px;background:var(--status-bg);border-top:1px solid var(--bd);font-size:12px;color:var(--dim);flex-shrink:0;gap:10px}
 .sb .dot{width:7px;height:7px;border-radius:50%;background:#4ecca3;display:inline-block}
 .sb .dot.d{background:var(--red)}
+
+.preso-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:#000;z-index:500;flex-direction:column}
+.preso-overlay.show{display:flex}
+.preso-bar{display:flex;align-items:center;padding:8px 20px;color:#888;font-size:13px;flex-shrink:0}
+.preso-stage{flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.preso-stage .slide-page{width:80vw;max-width:1200px;min-height:60vh;max-height:85vh;overflow:auto;font-size:22px;line-height:2;padding:48px 64px;background:#1a1a2e;color:#e0e0e0;border-radius:12px;border:1px solid #333}
+.preso-stage .slide-page h1{font-size:42px;color:#e94560}
+.preso-stage .slide-page h2{font-size:28px;color:#f0a0b0}
+.preso-nav button:hover{background:rgba(233,69,96,.5)!important}
+.slide-theme-nebula .slide-page,.preso-stage .slide-theme-nebula .slide-page{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff}
+.slide-theme-nebula .slide-page h1,.preso-stage .slide-theme-nebula .slide-page h1{color:#fff}
+.slide-theme-gradient .slide-page,.preso-stage .slide-theme-gradient .slide-page{background:linear-gradient(135deg,#0f0c29,#302b63,#24243e);color:#e0e0ff}
+.slide-theme-gradient .slide-page h1{color:#ff6b6b}
 </style></head>
 <body>
 
@@ -138,6 +151,8 @@ body{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Microsof
   </span>
   <span id="report-opts" style="display:none;gap:4px">
     <select id="slide-ratio" style="padding:5px 8px;border:1px solid var(--bd);background:#1a1a2e;color:var(--dim);border-radius:4px;font-size:12px"><option>16:9</option><option>4:3</option></select>
+    <select id="slide-theme" style="padding:5px 8px;border:1px solid var(--bd);background:#1a1a2e;color:var(--dim);border-radius:4px;font-size:12px"><option value="dark">暗色</option><option value="nebula">星云</option><option value="gradient">渐变</option></select>
+    <button class="tb-btn" id="b-slide-play" style="background:var(--red);border-color:var(--red);color:#fff;display:none">▶ 播放</button>
   </span>
   <span class="sep"></span>
   <button class="tb-btn" id="b-b"><b>B</b></button>
@@ -171,6 +186,7 @@ body{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Microsof
 
 <div class="sb"><span class="dot" id="dot"></span><span id="st">已保存</span><span style="margin:0 8px;color:var(--bd)">|</span><span id="mode-label">默认模式</span><span style="margin:0 8px;color:var(--bd)">|</span><span id="wc">0 字</span><span style="margin-left:auto">OMD · 智慧生而共通</span></div>
 
+<div class="preso-overlay" id="preso-overlay"><div class="preso-bar"><span id="preso-counter"></span><span style="flex:1"></span><button id="preso-exit" style="background:none;border:none;color:#fff;font-size:24px;cursor:pointer;padding:4px 12px">✕</button></div><div class="preso-stage" id="preso-stage"></div><div class="preso-nav"><button id="preso-prev" style="position:absolute;left:20px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.3);border:none;color:#fff;font-size:40px;cursor:pointer;padding:10px 20px;border-radius:8px">‹</button><button id="preso-next" style="position:absolute;right:20px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.3);border:none;color:#fff;font-size:40px;cursor:pointer;padding:10px 20px;border-radius:8px">›</button></div></div>
 <script>
 var mode='default',dirty=false,currentOMD='',title='新文档',sidebarTab='outline';
 var ed=document.getElementById('ed'),sb=document.getElementById('sidebar-content'),
@@ -442,6 +458,17 @@ document.addEventListener('selectionchange',function(){setTimeout(updateWC,100)}
 bindEditorEvents();
 buildSidebar('default');
 
+var presoSlides=[],presoCurrent=0;
+document.getElementById('b-slide-play').style.display='';
+function startPresentation(){sync();var d=parseOMD(currentOMD);presoSlides=d.body.split(/---slide---/);if(presoSlides.length===1)presoSlides=d.body.split(/\n(?=# )/);presoCurrent=0;document.getElementById('preso-overlay').classList.add('show');var overlay=document.getElementById('preso-overlay');if(overlay.requestFullscreen){overlay.requestFullscreen().catch(function(){})}else if(overlay.webkitRequestFullscreen){overlay.webkitRequestFullscreen()}showPresoSlide(0)}
+function showPresoSlide(n){presoCurrent=n;var stage=document.getElementById('preso-stage');var content=presoSlides[n]?presoSlides[n].trim():'';stage.innerHTML='<div class="slide-page">'+mdToHTML(content)+'</div>';document.getElementById('preso-counter').textContent=(n+1)+' / '+presoSlides.length;document.getElementById('preso-prev').style.display=n===0?'none':'';document.getElementById('preso-next').style.display=n>=presoSlides.length-1?'none':''}
+function presoPrev(){if(presoCurrent>0)showPresoSlide(presoCurrent-1)}
+function presoNext(){if(presoCurrent<presoSlides.length-1)showPresoSlide(presoCurrent+1)}
+function stopPresentation(){document.getElementById('preso-overlay').classList.remove('show');if(document.fullscreenElement||document.webkitFullscreenElement){if(document.exitFullscreen){document.exitFullscreen().catch(function(){})}else if(document.webkitExitFullscreen){document.webkitExitFullscreen()}}}
+document.getElementById('b-slide-play').onclick=startPresentation;document.getElementById('preso-prev').onclick=presoPrev;document.getElementById('preso-next').onclick=presoNext;document.getElementById('preso-exit').onclick=stopPresentation;
+document.getElementById('preso-stage').onclick=function(e){if(e.target===document.getElementById('preso-stage')||e.target.closest('.slide-page'))presoNext()};
+document.addEventListener('keydown',function(e){var overlay=document.getElementById('preso-overlay');if(overlay.classList.contains('show')){if(e.key==='ArrowLeft'){e.preventDefault();presoPrev()}else if(e.key==='ArrowRight'){e.preventDefault();presoNext()}else if(e.key==='Escape'){e.preventDefault();stopPresentation()}return}if(e.key==='F5'&&mode==='report'){e.preventDefault();startPresentation()}});
+
 var BLOCK_ICONS={idea:"💡",todo:"⬜",done:"✅",pin:"📌",h1:"#",h2:"##",quote:"💬"};
 var BLOCK_PLACEHOLDER={idea:"写点什么...",todo:"待办事项...",done:"已完成...",pin:"重点标记...",h1:"标题",h2:"副标题",quote:"引用..."};
 function createBlock(type,text){var d=document.createElement("div");d.className="block"+(text?"":" block-empty");d.setAttribute("data-type",type);d.innerHTML="<span class="block-icon">"+BLOCK_ICONS[type]+"</span><span class="block-text" contenteditable="true" data-placeholder=""+BLOCK_PLACEHOLDER[type]+""></span>";if(text)d.querySelector(".block-text").textContent=text;var txt=d.querySelector(".block-text");txt.addEventListener("keydown",blockKeydown);txt.addEventListener("input",function(){mark(true)});txt.addEventListener("focus",function(){d.classList.remove("block-empty")});txt.addEventListener("blur",function(){if(!this.textContent.trim())d.classList.add("block-empty")});return d}
@@ -460,9 +487,52 @@ tags: []
 
 "+blocksToMD()+"
 
+"+tail;return}if(mode==="report"){var tail=getOMDTail(currentOMD);var slides=[];document.querySelectorAll(".main-area .slide-page").forEach(function(sp){var clone=sp.cloneNode(true);var num=clone.querySelector(".slide-num");if(num)num.remove();slides.push(wysiwygToMD(clone))});currentOMD="---
+title: ""+title+""
+tags: []
+---
+
+"+slides.join("\n\n---slide---\n\n")+"
+
 "+tail;return}return _origSync();};
 var _origRefresh=refresh;refresh=function(){if(mode==="default"){renderBlocks();return}return _origRefresh();};
 refresh();
+
+// 幻灯片模板按钮
+(function(){
+  var ro=document.getElementById('report-opts');
+  var sep=document.createElement('span');
+  sep.style.cssText='width:1px;height:22px;background:var(--bd);margin:0 2px;flex-shrink:0;display:inline-block';
+  ro.appendChild(sep);
+  var templates=[
+    {label:'标题页',md:'# 标题\n\n副标题\n\n作者'},
+    {label:'内容页',md:'## 要点\n\n- 要点一\n- 要点二\n- 要点三'},
+    {label:'两栏',md:'| 左栏 | 右栏 |\n| --- | --- |\n| 内容A | 内容B |'},
+    {label:'结束页',md:'# 谢谢\n\nQ & A'}
+  ];
+  templates.forEach(function(t){
+    var btn=document.createElement('button');
+    btn.className='tb-btn';btn.textContent=t.label;
+    btn.onclick=function(){
+      var slides=document.querySelectorAll('.main-area .slide-page');
+      if(slides.length){
+        var last=slides[slides.length-1];
+        var div=document.createElement('div');
+        div.className='slide-page';div.contentEditable='true';
+        div.innerHTML=mdToHTML(t.md)+'<span class="slide-num">'+(slides.length+1)+'/'+(slides.length+1)+'</span>';
+        last.parentNode.insertBefore(div,last.nextSibling);
+        div.focus();mark(true);
+      }
+    };
+    ro.appendChild(btn);
+  });
+})();
+var AUTOSAVE_KEY='omd-autosave';
+function autosaveSave(){if(dirty){try{localStorage.setItem(AUTOSAVE_KEY,JSON.stringify({omd:currentOMD,title:title,mode:mode,time:Date.now()}))}catch(e){}}}
+function autosaveLoad(){try{var d=JSON.parse(localStorage.getItem(AUTOSAVE_KEY));if(d&&d.omd&&Date.now()-d.time<86400000){currentOMD=d.omd;title=d.title;if(d.mode)mode=d.mode;refresh();mark(false);document.getElementById('st').textContent='已恢复';setTimeout(function(){document.getElementById('st').textContent='已保存'},2000);return true}}catch(e){}return false}
+setInterval(function(){if(dirty)autosaveSave()},30000);
+autosaveLoad();
+function applySlideTheme(theme){document.querySelector('.main-area').className=document.querySelector('.main-area').className.replace(/slide-theme-\w+/g,'');if(theme!=='dark')document.querySelector('.main-area').classList.add('slide-theme-'+theme);document.getElementById('preso-stage').className=document.getElementById('preso-stage').className.replace(/slide-theme-\w+/g,'');if(theme!=='dark')document.getElementById('preso-stage').classList.add('slide-theme-'+theme)}
 </script>
 </body>
 </html>
