@@ -57,6 +57,8 @@ body{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Microsof
 .sb-tab{flex:1;padding:10px 0;border:none;background:transparent;color:var(--dim);cursor:pointer;font-size:16px;border-bottom:2px solid transparent}
 .sb-tab.on{border-bottom-color:var(--red);color:var(--tx)}
 .main-area{flex:1;overflow-y:auto;overflow-x:hidden;display:flex;justify-content:center}
+.main-area.article,.main-area.report,.main-area.default{overflow-x:hidden!important}
+.article-page,.slide-page{max-width:100%!important;word-wrap:break-word;overflow-wrap:break-word}
 .main-area.zoomable{--zoom:1}
 .main-area.zoomable>*{transform:scale(var(--zoom));transform-origin:top left}
 .main-area.zoomable .article-page{box-shadow:0 2px 16px rgba(0,0,0,.2)}
