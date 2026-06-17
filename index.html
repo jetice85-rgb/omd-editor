@@ -81,8 +81,8 @@ body{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Microsof
 
 
 /* 文稿模式 */
-.main-area.article{background:var(--article-bg);padding:48px 24px 32px;flex-direction:column;align-items:center;gap:32px}
-.article-page{width:min(210mm, calc(100vw - 260px));min-height:297mm;padding:37mm 26mm 35mm 28mm;background:#fff;color:#000;box-shadow:0 2px 16px rgba(0,0,0,.2);font-family:FangSong,"仿宋",SimSun,serif;font-size:16pt;line-height:29pt;outline:none;position:relative}
+.main-area.article{background:#e0e0e0;padding:32px 0 64px;flex-direction:column;align-items:center;gap:0}
+.article-page{width:min(210mm, calc(100vw - 260px));min-height:297mm;padding:37mm 26mm 35mm 28mm;background:#fff;color:#000;border:1px solid #d4d4d4;box-shadow:0 2px 8px rgba(0,0,0,.08),0 8px 32px rgba(0,0,0,.12);font-family:FangSong,"仿宋",SimSun,serif;font-size:16pt;line-height:29pt;outline:none;position:relative;margin-bottom:24px}
 .article-page p{margin:0;text-indent:2em}
 .article-page h1{font-family:SimSun,"黑体",sans-serif;font-size:22pt;text-align:center;color:#000;margin:0 0 24pt;text-indent:0}
 .article-page h2{font-family:SimSun,"黑体",sans-serif;font-size:16pt;text-indent:0;margin:16pt 0 8pt;color:#000}
@@ -93,10 +93,21 @@ body{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Microsof
 .article-page td{text-indent:0}
 .article-page .page-num{position:absolute;bottom:8mm;left:0;right:0;text-align:center;font-size:10pt;color:#999;font-family:sans-serif}
 .article-pages-wrap{display:flex;flex-wrap:wrap;justify-content:center;gap:24px;width:100%}
-.article-pages-wrap .article-page{box-shadow:0 4px 20px rgba(0,0,0,.25),0 1px 4px rgba(0,0,0,.15)}
+.article-pages-wrap .article-page{box-shadow:0 2px 8px rgba(0,0,0,.08),0 8px 32px rgba(0,0,0,.12)}
 
 /* 演讲模式 */
-.main-area.report{background:var(--report-bg);padding:32px 24px;flex-direction:column;align-items:center;gap:24px}
+.main-area.report{background:var(--report-bg);padding:0;flex-direction:row;align-items:stretch;gap:0}
+.report-layout{display:flex;width:100%;height:100%}
+.report-thumbnails{width:200px;overflow-y:auto;background:var(--sb);padding:8px;border-right:1px solid var(--bd);flex-shrink:0}
+.report-thumb{width:160px;margin:0 auto 8px;border:2px solid transparent;border-radius:4px;cursor:pointer;background:var(--tb);overflow:hidden;position:relative;transition:.15s}
+.report-thumb:hover{border-color:var(--dim)}
+.report-thumb.active{border-color:var(--red);box-shadow:0 0 0 2px rgba(233,69,96,.3)}
+.report-thumb .mini{transform:scale(.2);transform-origin:top left;width:500%;pointer-events:none;font-size:8px;line-height:1.2;color:var(--tx);padding:4px}
+.report-thumb .thumb-num{position:absolute;bottom:2px;right:4px;font-size:10px;color:var(--dim)}
+.report-thumb.report-add{display:flex;align-items:center;justify-content:center;height:40px;color:var(--dim);border-style:dashed}
+.report-thumb.report-add:hover{border-color:var(--red);color:var(--red)}
+.report-canvas{flex:1;display:flex;align-items:center;justify-content:center;padding:24px;overflow:auto}
+.report-canvas .slide-page{box-shadow:0 4px 24px rgba(0,0,0,.3)}
 .slide-page{padding:48px 64px;background:var(--tb);color:var(--tx);border-radius:12px;border:1px solid var(--bd);font-size:18px;line-height:1.8;box-shadow:0 4px 24px rgba(0,0,0,.3);outline:none;position:relative}
 .slide-page h1{font-size:36px;color:var(--red);margin-bottom:20px}
 .slide-page h2{font-size:24px;color:var(--pink);margin:24px 0 12px}
@@ -386,7 +397,7 @@ function setMode(m){
     buildSidebar(m);
     return;
   }else if(m==='article'){
-    ma.style.padding='48px 0';
+    ma.style.padding='32px 0 64px';
     renderArticlePages();
     buildSidebar(m);
     return;
@@ -420,9 +431,39 @@ function renderArticlePages(){
 function renderReportPages(){
   var d=parseOMD(currentOMD),slides=d.body.split(/---slide---/);
   if(slides.length===1)slides=d.body.split(/\n(?=# )/);
-  var w=960,h=540,ratio=document.getElementById('slide-ratio').value;
-  if(ratio==='4:3'){w=960;h=720}
-  slides.forEach(function(s,i){ma.innerHTML+='<div class="slide-page" contenteditable="true" style="width:'+w+'px;min-height:'+h+'px">'+mdToHTML(s.trim())+'<span class="slide-num">'+(i+1)+'/'+slides.length+'</span></div>'});
+  ma.innerHTML="<div class=report-layout><div class=report-thumbnails id=report-thumbs></div><div class=report-canvas id=report-canvas></div></div>";
+  var w=960,h=540,ratio=document.getElementById("slide-ratio").value;
+  if(ratio==="4:3"){w=960;h=720}
+  reportSlides=slides;reportActive=0;
+  var thumbs=document.getElementById("report-thumbs");
+  slides.forEach(function(s,i){
+    var thumb=document.createElement("div");thumb.className="report-thumb"+(i===0?" active":"");
+    thumb.innerHTML="<div class=mini>"+mdToHTML(s.trim().substring(0,200))+"</div><span class=thumb-num>"+(i+1)+"</span>";
+    thumb.onclick=function(){reportActive=i;renderReportSlide();updateReportThumbs()};
+    thumbs.appendChild(thumb);
+  });
+  var addBtn=document.createElement("div");addBtn.className="report-thumb report-add";addBtn.innerHTML="<span style=font-size:28px>+</span>";
+  addBtn.onclick=function(){
+    reportSlides.push("# 新幻灯片");
+    renderReportPages();
+  };
+  thumbs.appendChild(addBtn);
+  renderReportSlide();
+}
+
+var reportSlides=[],reportActive=0;
+function renderReportSlide(){
+  var canvas=document.getElementById("report-canvas");if(!canvas)return;
+  var s=reportSlides[reportActive]||"";
+  var w=960,h=540,ratio=document.getElementById("slide-ratio").value;
+  if(ratio==="4:3"){w=960;h=720}
+  canvas.innerHTML="<div class=slide-page contenteditable=true style=width:min("+w+"px,100%);aspect-ratio:16/9;min-height:auto>"+mdToHTML(s.trim())+"<span class=slide-num>"+(reportActive+1)+"/"+reportSlides.length+"</span></div>";
+  var sp=canvas.querySelector(".slide-page");
+  sp.addEventListener("input",function(){reportSlides[reportActive]=wysiwygToMD(sp);mark(true)});
+}
+function updateReportThumbs(){
+  var thumbs=document.querySelectorAll(".report-thumb");
+  thumbs.forEach(function(t,i){t.classList.toggle("active",i===reportActive)});
 }
 
 function save(){
@@ -549,7 +590,7 @@ function blockKeydown(e){if(e.key==="Enter"){e.preventDefault();var type=this.pa
 function blocksToMD(){var lines=[],blocks=document.querySelectorAll(".block");blocks.forEach(function(b){var type=b.getAttribute("data-type"),text=(b.querySelector(".block-text")||{}).textContent||"";switch(type){case"h1":lines.push("# "+text);break;case"h2":lines.push("## "+text);break;case"idea":lines.push(text);break;case"todo":lines.push("- [ ] "+text);break;case"done":lines.push("- [x] "+text);break;case"pin":lines.push("**"+text+"**");break;case"quote":lines.push("> "+text);break;default:lines.push(text)}});return lines.join(String.fromCharCode(10,10))}
 function renderBlocks(){var s=document.getElementById("block-stream");if(!s)return;s.innerHTML="";var d=parseOMD(currentOMD);var blocks=parseMDToBlocks(d.body);if(!blocks.length){addBlock("idea");return}blocks.forEach(function(b){var el=createBlock(b.type,b.text);s.appendChild(el)})}
 function parseMDToBlocks(body){if(!body||!body.trim())return[];var lines=body.split(String.fromCharCode(10)),blocks=[];for(var i=0;i<lines.length;i++){var l=lines[i],m;if(m=l.match(/^- \[x\] (.+)/)){blocks.push({type:"done",text:m[1]})}else if(m=l.match(/^- \[ \] (.+)/)){blocks.push({type:"todo",text:m[1]})}else if(m=l.match(/^# (.+)/)){blocks.push({type:"h1",text:m[1]})}else if(m=l.match(/^## (.+)/)){blocks.push({type:"h2",text:m[1]})}else if(m=l.match(/^> (.+)/)){blocks.push({type:"quote",text:m[1]})}else if(m=l.match(/^\*\*(.+)\*\*$/)){blocks.push({type:"pin",text:m[1]})}else if(/^\s*$/.test(l)){}else{blocks.push({type:"idea",text:l})}}return blocks}
-var _origSync=sync;sync=function(){if(mode==="default"){var tail=getOMDTail(currentOMD);currentOMD="---"+String.fromCharCode(10)+"title: "+title+String.fromCharCode(10)+"tags: []"+String.fromCharCode(10)+"---"+String.fromCharCode(10,10)+blocksToMD()+String.fromCharCode(10,10)+tail;return}if(mode==="report"){var tail=getOMDTail(currentOMD);var slides=[];document.querySelectorAll(".main-area .slide-page").forEach(function(sp){var clone=sp.cloneNode(true);var num=clone.querySelector(".slide-num");if(num)num.remove();slides.push(wysiwygToMD(clone))});currentOMD="---"+String.fromCharCode(10)+"title: "+title+String.fromCharCode(10)+"tags: []"+String.fromCharCode(10)+"---"+String.fromCharCode(10,10)+slides.join(String.fromCharCode(10,10)+"---slide---"+String.fromCharCode(10,10))+String.fromCharCode(10,10)+tail;return}return _origSync();};
+var _origSync=sync;sync=function(){if(mode==="default"){var tail=getOMDTail(currentOMD);currentOMD="---"+String.fromCharCode(10)+"title: "+title+String.fromCharCode(10)+"tags: []"+String.fromCharCode(10)+"---"+String.fromCharCode(10,10)+blocksToMD()+String.fromCharCode(10,10)+tail;return}if(mode==="report"){var tail=getOMDTail(currentOMD);var slides=[];if(reportSlides&&reportSlides.length){reportSlides[reportActive]=wysiwygToMD(document.querySelector(".report-canvas .slide-page"));slides=reportSlides}else{document.querySelectorAll(".main-area .slide-page").forEach(function(sp){var clone=sp.cloneNode(true);var num=clone.querySelector(".slide-num");if(num)num.remove();slides.push(wysiwygToMD(clone))})};currentOMD="---"+String.fromCharCode(10)+"title: "+title+String.fromCharCode(10)+"tags: []"+String.fromCharCode(10)+"---"+String.fromCharCode(10,10)+slides.join(String.fromCharCode(10,10)+"---slide---"+String.fromCharCode(10,10))+String.fromCharCode(10,10)+tail;return}return _origSync();};
 var _origRefresh=refresh;refresh=function(){if(mode==="default"){renderBlocks();return}return _origRefresh();};
 
 // 幻灯片模板按钮
