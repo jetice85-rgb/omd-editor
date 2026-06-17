@@ -122,6 +122,14 @@ body{font-family:-apple-system,"Microsoft YaHei",sans-serif;background:var(--bg)
 .preso-stage .slide-page h1{font-size:42px;color:#e94560;margin-bottom:24px}
 .preso-stage .slide-page h2{font-size:28px;color:#f0a0b0;margin:28px 0 16px}
 .preso-nav button:hover{background:rgba(233,69,96,.5)!important}
+
+/* Slide themes */
+.slide-theme-light .slide-page,.preso-stage .slide-theme-light .slide-page{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff}
+.slide-theme-light .slide-page h1,.preso-stage .slide-theme-light .slide-page h1{color:#fff}
+.slide-theme-light .slide-page h2,.preso-stage .slide-theme-light .slide-page h2{color:rgba(255,255,255,.85)}
+.slide-theme-gradient .slide-page,.preso-stage .slide-theme-gradient .slide-page{background:linear-gradient(135deg,#0f0c29,#302b63,#24243e);color:#e0e0ff}
+.slide-theme-gradient .slide-page h1{color:#ff6b6b}
+.slide-theme-gradient .slide-page h2{color:#ffa07a}
 </style></head>
 <body>
 
@@ -137,6 +145,7 @@ body{font-family:-apple-system,"Microsoft YaHei",sans-serif;background:var(--bg)
   </span>
   <span id="report-opts" style="display:none;gap:4px">
     <select id="slide-ratio" style="padding:5px 8px;border:1px solid var(--bd);background:#1a1a2e;color:var(--dim);border-radius:4px;font-size:12px"><option>16:9</option><option>4:3</option></select>
+    <select id="slide-theme" style="padding:5px 8px;border:1px solid var(--bd);background:#1a1a2e;color:var(--dim);border-radius:4px;font-size:12px" onchange="applySlideTheme(this.value)"><option value="dark">🌙 暗色</option><option value="light">☀ 亮色</option><option value="gradient">🌈 渐变</option></select>
     <button class="tb-btn" id="b-slide-play" style="background:var(--red);border-color:var(--red);color:#fff;display:none">▶ 播放</button>
   </span>
   <span class="sep"></span>
@@ -457,10 +466,35 @@ document.getElementById('preso-prev').onclick=presoPrev;
 document.getElementById('preso-next').onclick=presoNext;
 document.getElementById('preso-exit').onclick=stopPresentation;
 document.getElementById('preso-stage').onclick=function(e){if(e.target===document.getElementById('preso-stage')||e.target.closest('.slide-page'))presoNext()};
-document.addEventListener('keydown',function(e){var overlay=document.getElementById('preso-overlay');if(!overlay.classList.contains('show'))return;if(e.key==='ArrowLeft'){e.preventDefault();presoPrev()}else if(e.key==='ArrowRight'){e.preventDefault();presoNext()}else if(e.key==='Escape'){e.preventDefault();stopPresentation()}});
+document.addEventListener('keydown',function(e){
+  var overlay=document.getElementById('preso-overlay');
+  if(overlay.classList.contains('show')){
+    if(e.key==='ArrowLeft'){e.preventDefault();presoPrev()}
+    else if(e.key==='ArrowRight'){e.preventDefault();presoNext()}
+    else if(e.key==='Escape'){e.preventDefault();stopPresentation()}
+    return;
+  }
+  // F5 = 开始播放（仅在报告模式）
+  if(e.key==='F5'&&mode==='report'){e.preventDefault();startPresentation()}
+});
 var slideTemplates={'标题页':'# 标题\n\n## 副标题\n\n作者 · 日期','内容页':'## 要点\n\n- 要点一\n- 要点二\n- 要点三','两栏':'<div style="display:flex;gap:24px"><div style="flex:1">左栏</div><div style="flex:1">右栏</div></div>','结束页':'# 谢谢\n\nQ & A'};
 function insertSlideTemplate(tmpl){sync();var d=parseOMD(currentOMD);var newBody=d.body.replace(/\n*$/,'\n\n---slide---\n'+tmpl);var tail=getOMDTail(currentOMD);currentOMD='---\ntitle: "'+title+'"\ntags: []\n---\n\n'+newBody+'\n\n'+tail;setMode(mode)}
 (function(){var ro=document.getElementById('report-opts');var names=['标题页','内容页','两栏','结束页'];for(var i=0;i<names.length;i++){var btn=document.createElement('button');btn.className='tb-btn';btn.textContent=names[i];btn.style.cssText='font-size:11px;padding:5px 8px';(function(tmpl){btn.onclick=function(){insertSlideTemplate(tmpl)}})(slideTemplates[names[i]]);ro.appendChild(btn)}})();
+
+/* === 自动保存 === */
+var AUTOSAVE_KEY='omd-autosave';
+function autosaveSave(){if(dirty){try{localStorage.setItem(AUTOSAVE_KEY,JSON.stringify({omd:currentOMD,title:title,mode:mode,time:Date.now()}))}catch(e){}}}
+function autosaveLoad(){try{var d=JSON.parse(localStorage.getItem(AUTOSAVE_KEY));if(d&&d.omd&&Date.now()-d.time<86400000){currentOMD=d.omd;title=d.title;if(d.mode)mode=d.mode;refresh();mark(false);document.getElementById('st').textContent='已恢复';setTimeout(function(){document.getElementById('st').textContent='已保存'},2000);return true}}catch(e){}return false}
+setInterval(function(){if(dirty)autosaveSave()},30000);
+autosaveLoad();
+
+/* === 幻灯片主题 === */
+function applySlideTheme(theme){
+  document.querySelector('.main-area').className=document.querySelector('.main-area').className.replace(/slide-theme-\w+/g,'');
+  if(theme!=='dark')document.querySelector('.main-area').classList.add('slide-theme-'+theme);
+  document.getElementById('preso-stage').className=document.getElementById('preso-stage').className.replace(/slide-theme-\w+/g,'');
+  if(theme!=='dark')document.getElementById('preso-stage').classList.add('slide-theme-'+theme);
+}
 </script>
 </body>
 </html>
