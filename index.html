@@ -4,7 +4,7 @@
 <style>
 :root{
   --bg:#1b1e2b;--tb:#212433;--bd:#2a2f42;--red:#d4576b;--pink:#d8909e;
-  --tx:#ccd0d8;--dim:#6b7080;--warm:#f5f0eb;--card:#fff;--sb:#191c26;
+  --tx:#d8dce4;--dim:#828896;--warm:#f5f0eb;--card:#fff;--sb:#191c26;
   --btn-bg:#252836;--code-bg:var(--bd);--quote-bg:rgba(233,69,96,0.06);
   --td-bg:#1a1a2e;--input-bg:#252836;--modal-bg:#16213e;
   --article-bg:#4b5563;--report-bg:#0f0f1a;--report-pg:var(--tb);
@@ -38,7 +38,7 @@ body{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Microsof
 .mode-btn:hover{background:var(--sidebar-hover);color:var(--tx);transition:all .15s}
 .mode-btn.on{border-color:var(--red);background:rgba(233,69,96,.14);color:var(--tx)}
 
-.tb-btn{height:38px;padding:0 14px;border:1px solid var(--bd);background:var(--btn-bg);color:#b8c0cc;border-radius:5px;cursor:pointer;font-size:14px;white-space:nowrap;display:inline-flex;align-items:center}
+.tb-btn{height:38px;padding:0 14px;border:1px solid var(--bd);background:var(--btn-bg);color:var(--dim);border-radius:5px;cursor:pointer;font-size:14px;white-space:nowrap;display:inline-flex;align-items:center}
 .tb-btn:hover{background:var(--sidebar-hover);color:var(--tx);transition:all .15s}
 .exp-wrap{position:relative}
 .exp-menu{display:none;position:absolute;top:calc(100% + 4px);right:0;background:var(--tb);border:1px solid var(--bd);border-radius:6px;padding:4px 0;min-width:170px;z-index:100}
@@ -85,7 +85,7 @@ body{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Microsof
 
 
 /* 文稿模式 */
-.main-area.article{background:#e0e0e0;padding:32px 0 64px;flex-direction:column;align-items:center;gap:0}
+.main-area.article{background:#e0e0e0;padding:64px 0 80px;flex-direction:column;align-items:center;gap:0}
 .article-page{width:min(210mm, calc(100vw - 260px));min-height:297mm;padding:37mm 28mm 35mm 28mm;background:#fff;color:#000;border:1px solid #d4d4d4;box-shadow:0 2px 8px rgba(0,0,0,.08),0 8px 32px rgba(0,0,0,.12);font-family:FangSong,"仿宋",SimSun,serif;font-size:16pt;line-height:29pt;outline:none;position:relative;margin-bottom:24px}
 .article-page p{margin:0;text-indent:2em}
 .article-page h1{font-family:SimSun,"黑体",sans-serif;font-size:22pt;text-align:center;color:#000;margin:0 0 24pt;text-indent:0}
