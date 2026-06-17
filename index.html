@@ -179,6 +179,41 @@ mark.search-highlight.current{background:#ff9800;color:#fff}
 .slide-theme-nebula .slide-page h1,.preso-stage .slide-theme-nebula .slide-page h1{color:#fff}
 .slide-theme-gradient .slide-page,.preso-stage .slide-theme-gradient .slide-page{background:linear-gradient(135deg,#0f0c29,#302b63,#24243e);color:#e0e0ff}
 .slide-theme-gradient .slide-page h1{color:#ff6b6b}
+
+/* 打印样式 */
+@media print{
+  .tb,.sidebar,.sb,.search-bar,.block-toolbar,.table-ctx,.preso-overlay,.preso-nav,.preso-bar,.exp-wrap,.block-stream-hint{display:none!important}
+  body{background:#fff!important;color:#000!important;overflow:visible!important;height:auto!important}
+  .layout{display:block!important;overflow:visible!important}
+  .main-area{overflow:visible!important;display:block!important;background:#fff!important;padding:0!important;max-width:100%!important}
+  .main-area.article{background:#fff!important;padding:0!important}
+  .main-area.report{background:#fff!important;padding:0!important}
+  .article-page{box-shadow:none!important;border:1px solid #ccc!important;background:#fff!important;color:#000!important;width:100%!important;max-width:100%!important;margin:0 0 16px 0!important;padding:20mm!important;page-break-after:auto!important;font-family:FangSong,"仿宋",SimSun,serif!important;font-size:16pt!important;line-height:29pt!important}
+  .article-page h1,.article-page h2,.article-page h3{color:#000!important}
+  .article-pages-wrap{display:block!important;gap:0!important}
+  .slide-page{box-shadow:none!important;border:1px solid #ccc!important;background:#fff!important;color:#000!important;page-break-after:always!important;border-radius:0!important;padding:48px 64px!important;width:100%!important;max-width:100%!important}
+  .slide-page h1,.slide-page h2{color:#000!important}
+  .slide-page .slide-num{color:#999!important}
+  .report-canvas{display:block!important}
+  .preso-stage .slide-page{background:#fff!important;color:#000!important;page-break-after:always!important}
+  .preso-stage .slide-page h1,.preso-stage .slide-page h2{color:#000!important}
+  *{background-image:none!important}
+  #ed th,#ed td,.article-page th,.article-page td{border-color:#000!important;background:#fff!important;color:#000!important}
+  #ed th,.article-page th{background:#eee!important}
+  #shortcut-overlay{display:none!important}
+  .block{background:#fff!important;color:#000!important;border:1px solid #ddd!important}
+  .block-text{color:#000!important}
+}
+/* 快捷键帮助弹窗 */
+.shortcut-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);z-index:1000;justify-content:center;align-items:center}
+.shortcut-overlay.show{display:flex}
+.shortcut-card{background:var(--tb);border:1px solid var(--bd);border-radius:12px;padding:32px;max-width:520px;width:90%;box-shadow:0 8px 40px rgba(0,0,0,.3);color:var(--tx)}
+.shortcut-card h2{font-size:20px;margin:0 0 20px;color:var(--red);text-align:center}
+.shortcut-card table{width:100%;border-collapse:collapse}
+.shortcut-card td{padding:8px 12px;border-bottom:1px solid var(--bd);font-size:14px}
+.shortcut-card td:first-child{white-space:nowrap;width:140px}
+.shortcut-card kbd{display:inline-block;padding:2px 8px;background:var(--btn-bg);border:1px solid var(--bd);border-radius:4px;font-family:Consolas,monospace;font-size:13px;color:var(--red)}
+.shortcut-card .shortcut-hint{text-align:center;margin-top:16px;font-size:12px;color:var(--dim)}
 </style></head>
 <body>
 
@@ -227,7 +262,8 @@ mark.search-highlight.current{background:#ff9800;color:#fff}
     <div id="sidebar-content"></div>
   </div>
   <div class="main-area default" id="main-area"><div class="search-bar" id="search-bar"><input id="search-input" placeholder="查找..."><button id="search-prev" title="上一个">◀</button><button id="search-next" title="下一个">▶</button><span class="search-count" id="search-count"></span><button id="search-close" title="关闭">✕</button></div><div class="block-stream" id="block-stream"></div><div class="block-toolbar" id="block-toolbar"><button title="想法" onclick="addBlock('idea')">💡</button><button title="待办" onclick="addBlock('todo')">⬜</button><button title="完成" onclick="addBlock('done')">✅</button><button title="重点" onclick="addBlock('pin')">📌</button><button title="标题" onclick="addBlock('h1')">T</button><button title="引用" onclick="addBlock('quote')">💬</button></div></div>
-<div class="table-ctx" id="table-ctx"><div data-action="insert-row-above">↑ 在上方插入行</div><div data-action="insert-row-below">↓ 在下方插入行</div><div data-action="delete-row">✕ 删除行</div><div data-action="insert-col-left">← 在左侧插入列</div><div data-action="insert-col-right">→ 在右侧插入列</div><div data-action="delete-col">✕ 删除列</div></div>
+<div class="table-ctx" id="table-ctx"><div data-action="insert-row-above">在上方插入行</div><div data-action="insert-row-below">在下方插入行</div><div data-action="insert-col-left">在左侧插入列</div><div data-action="insert-col-right">在右侧插入列</div><div data-action="delete-row">删除当前行</div><div data-action="delete-col">删除当前列</div></div>
+<div class="shortcut-overlay" id="shortcut-overlay"><div class="shortcut-card"><h2>键盘快捷键</h2><table><tr><td><kbd>Ctrl</kbd> + <kbd>B</kbd></td><td>粗体</td></tr><tr><td><kbd>Ctrl</kbd> + <kbd>I</kbd></td><td>斜体</td></tr><tr><td><kbd>Ctrl</kbd> + <kbd>1</kbd></td><td>一级标题</td></tr><tr><td><kbd>Ctrl</kbd> + <kbd>2</kbd></td><td>二级标题</td></tr><tr><td><kbd>Ctrl</kbd> + <kbd>3</kbd></td><td>三级标题</td></tr><tr><td><kbd>Ctrl</kbd> + <kbd>S</kbd></td><td>保存文档</td></tr><tr><td><kbd>Ctrl</kbd> + <kbd>F</kbd></td><td>查找文本</td></tr><tr><td><kbd>F5</kbd></td><td>开始演示</td></tr><tr><td><kbd>F11</kbd></td><td>全屏文稿</td></tr><tr><td><kbd>Alt</kbd> + <kbd>↑</kbd> / <kbd>↓</kbd></td><td>幻灯片排序</td></tr><tr><td><kbd>Esc</kbd></td><td>退出演示 / 关闭搜索</td></tr></table><div class="shortcut-hint">按 <kbd>?</kbd> 关闭</div></div></div>
 </div>
 
 <div class="sb"><span class="dot" id="dot"></span><span id="st">已保存</span><span style="margin:0 8px;color:var(--bd)">|</span><span id="mode-label">默认模式</span><span style="margin:0 8px;color:var(--bd)">|</span><span id="wc">0 字</span><span style="margin-left:auto">OMD · 智慧生而共通</span></div>
@@ -828,7 +864,7 @@ function observeCurrentHeading(){
 var tableCtx=document.getElementById('table-ctx'),ctxTable=null,ctxCell=null;
 ma.addEventListener('contextmenu',function(e){
   var td=e.target.closest('td,th');
-  if(!td||mode!=='article'){tableCtx.classList.remove('show');return}
+  if(!td||(mode!=='article'&&mode!=='report')){tableCtx.classList.remove('show');return}
   e.preventDefault();
   ctxTable=td.closest('table');ctxCell=td;
   tableCtx.style.left=e.clientX+'px';tableCtx.style.top=e.clientY+'px';
@@ -870,6 +906,23 @@ buildSidebar=function(m){
   if(m==='article'&&sidebarTab==='vault'){loadVault();return}
   _origBuildSidebar(m);
 };
+
+// ====== 4. 快捷键帮助 (? 键) ======
+var shortcutOverlay=document.getElementById('shortcut-overlay');
+function toggleShortcutHelp(){
+  if(shortcutOverlay.classList.contains('show')){shortcutOverlay.classList.remove('show')}
+  else{shortcutOverlay.classList.add('show')}
+}
+shortcutOverlay.addEventListener('click',function(e){
+  if(e.target===shortcutOverlay){shortcutOverlay.classList.remove('show')}
+});
+document.addEventListener('keydown',function(e){
+  if(e.key==='?'&&!e.ctrlKey&&!e.metaKey&&!e.altKey){
+    var tag=document.activeElement?document.activeElement.tagName.toLowerCase():'';
+    var ce=document.activeElement?document.activeElement.isContentEditable:false;
+    if(tag!=='input'&&tag!=='textarea'&&!ce){e.preventDefault();toggleShortcutHelp()}
+  }
+});
 </script>
 </body>
 </html>
