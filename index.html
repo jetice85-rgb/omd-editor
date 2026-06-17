@@ -198,7 +198,7 @@ body{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Microsof
 
 <div class="preso-overlay" id="preso-overlay"><div class="preso-bar"><span id="preso-counter"></span><span style="flex:1"></span><button id="preso-exit" style="background:none;border:none;color:#fff;font-size:24px;cursor:pointer;padding:4px 12px">✕</button></div><div class="preso-stage" id="preso-stage"></div><div class="preso-nav"><button id="preso-prev" style="position:absolute;left:20px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.3);border:none;color:#fff;font-size:40px;cursor:pointer;padding:10px 20px;border-radius:8px">‹</button><button id="preso-next" style="position:absolute;right:20px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.3);border:none;color:#fff;font-size:40px;cursor:pointer;padding:10px 20px;border-radius:8px">›</button></div></div>
 <script>
-var mode='default',dirty=false,currentOMD='',title='新文档',sidebarTab='outline';
+var mode='default',dirty=false,currentOMD='',title='新文档',sidebarTab='outline',reportSlides=[],reportSlidesLoaded=false,reportActive=0;
 var ed=document.getElementById('ed'),sb=document.getElementById('sidebar-content'),
     ma=document.getElementById('main-area'),dot=document.getElementById('dot'),
     st=document.getElementById('st'),ml=document.getElementById('mode-label');
@@ -250,7 +250,7 @@ function buildSidebar(m){if(sidebarTab==="vault"){loadVault();return}
 
 
 function renderArticleThumbs(){sb.innerHTML="<h3>🖼 页面</h3>";var pages=ma.querySelectorAll(".article-page");pages.forEach(function(pg,i){var w=document.createElement("div");w.className="item";w.style.cssText="display:flex;align-items:center;gap:8px;cursor:pointer";w.innerHTML="<span style=font-size:11px;color:var(--dim);min-width:28px>"+(i+1)+"</span><span style=font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap>第"+(i+1)+"页</span>";w.onclick=function(){var p=ma.querySelector('.article-page[data-page="'+i+'"]');if(p)p.scrollIntoView({behavior:"smooth",block:"start"})};sb.appendChild(w)})}
-function renderReportThumbs(){sb.innerHTML="<h3>🖼 幻灯片</h3>";if(!reportSlides||!reportSlides.length)return;reportSlides.forEach(function(s,i){var w=document.createElement("div");w.className="item"+(i===reportActive?" active":"");w.style.cssText="cursor:pointer;display:flex;align-items:center;gap:8px";var t=(s||"").trim().split(String.fromCharCode(10))[0].replace(/^#+\s*/,"").slice(0,20);w.innerHTML="<span style=font-size:14px;min-width:24px;text-align:center>"+(i+1)+"</span><span style=font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap>"+(t||"幻灯片"+(i+1))+"</span>";w.onclick=function(){reportActive=i;renderReportSlide()};sb.appendChild(w)});var addBtn=document.createElement("div");addBtn.className="item";addBtn.style.cssText="cursor:pointer;color:var(--red);font-weight:500";addBtn.innerHTML="+ 新建幻灯片";addBtn.onclick=function(){reportSlides.push("# 新幻灯片");renderReportPages();buildSidebar(mode)};sb.appendChild(addBtn)}
+function renderReportThumbs(){sb.innerHTML="<h3>🖼 幻灯片</h3>";if(!reportSlides||!reportSlides.length)return;reportSlides.forEach(function(s,i){var w=document.createElement("div");w.className="item"+(i===reportActive?" active":"");w.style.cssText="cursor:pointer;display:flex;align-items:center;gap:8px";var t=(s||"").trim().split(String.fromCharCode(10))[0].replace(/^#+\s*/,"").slice(0,20);w.innerHTML="<span style=font-size:14px;min-width:24px;text-align:center>"+(i+1)+"</span><span style=font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap>"+(t||"幻灯片"+(i+1))+"</span>";w.onclick=function(){reportActive=i;renderReportSlide()};sb.appendChild(w)});var addBtn=document.createElement("div");addBtn.className="item";addBtn.style.cssText="cursor:pointer;color:var(--red);font-weight:500";addBtn.innerHTML="+ 新建幻灯片";addBtn.onclick=function(){reportSlides.push("# 新幻灯片");reportActive=reportSlides.length-1;renderReportSlide()};sb.appendChild(addBtn)}
 
 function loadVault(){
   sb.innerHTML='<h3>📁 Vault</h3><div class="item" style="color:var(--dim)">加载中...</div>';
@@ -355,6 +355,7 @@ function setMode(m){
   if(m===mode)return;
   if(mode==='source'&&m!=='source'){currentOMD=ed.value||currentOMD;title=(currentOMD.match(/^title:\s*"([^"]+)"/m)||[])[1]||title}
   if(m==='source')sync();
+  if(m==='report'){reportSlidesLoaded=false;reportSlides=[];reportActive=0}
   mode=m;
   ml.textContent={default:'默认模式',article:'文稿模式',report:'演讲模式',source:'源码模式'}[m];
   document.querySelectorAll('.mode-btn').forEach(function(b){b.className='mode-btn'});
@@ -400,13 +401,59 @@ function renderArticlePages(){
   var d=parseOMD(currentOMD),blocks=d.body.split('\n\n'),pages=[],cur='',c=0;
   for(var i=0;i<blocks.length;i++){cur+=(cur?'\n\n':'')+blocks[i];c++;if(c>=15||i===blocks.length-1){pages.push(cur);cur='';c=0}}
   if(!pages.length)pages.push('');
+  var pageSize=document.getElementById('page-size').value;
+  var pageW=pageSize==='Letter'?'215.9mm':'210mm';
+  ma.style.setProperty('--page-w',pageW);
   var useDual=zoomLevel<0.8&&window.innerWidth>900;
   if(useDual)ma.innerHTML='<div class="article-pages-wrap" id="article-pages-wrap"></div>';
   var wrap=useDual?document.getElementById('article-pages-wrap'):ma;
-  pages.forEach(function(pg,i){var h='<div class="article-page" data-page="'+i+'" contenteditable="true">'+mdToHTML(pg)+'<div class="page-num">— '+(i+1)+' —</div></div>';if(useDual){wrap.innerHTML+=h}else{ma.innerHTML+=h}});
+  pages.forEach(function(pg,i){
+    var h='<div class="article-page" data-page="'+i+'" contenteditable="true" style="width:min('+pageW+', calc(100vw - 260px))">'+mdToHTML(pg)+'<div class="page-num">— '+(i+1)+' —</div></div>';
+    if(useDual){wrap.innerHTML+=h}else{ma.innerHTML+=h}
+  });
+  var aps=ma.querySelectorAll('.article-page');
+  for(var i=0;i<aps.length;i++){
+    aps[i].addEventListener('input',function(){
+      var all=ma.querySelectorAll('.article-page');
+      var parts=[];
+      for(var j=0;j<all.length;j++){parts.push(wysiwygToMD(all[j]))}
+      var tail=getOMDTail(currentOMD);
+      currentOMD='---\ntitle: "'+title+'"\ntags: []\n---\n\n'+parts.join('\n\n')+'\n\n'+tail;
+      mark(true);
+    });
+  }
 }
 
-function renderReportPages(){reportSlides=parseOMD(currentOMD).body.split(/---slide---/);if(reportSlides.length===1)reportSlides=parseOMD(currentOMD).body.split(/\n(?=# )/);reportActive=0;ma.innerHTML="<div class=report-canvas id=report-canvas></div>";renderReportSlide();buildSidebar(mode);}
+function renderReportPages(){
+  if(!reportSlidesLoaded){
+    reportSlides=parseOMD(currentOMD).body.split(/---slide---/);
+    if(reportSlides.length===1)reportSlides=parseOMD(currentOMD).body.split(/\n(?=# )/);
+    reportSlidesLoaded=true;
+  }
+  reportActive=0;
+  ma.innerHTML="<div class=report-canvas id=report-canvas></div>";
+  renderReportSlide();
+  buildSidebar(mode);
+}
+function renderReportSlide(){
+  var canvas=document.getElementById('report-canvas');
+  if(!canvas||!reportSlides||!reportSlides.length)return;
+  var content=reportSlides[reportActive]||'';
+  var theme=document.getElementById('slide-theme').value;
+  var ratioEl=document.getElementById('slide-ratio');
+  var ratio=ratioEl?ratioEl.value:'16:9';
+  canvas.innerHTML='<div class="slide-page slide-theme-'+theme+'" contenteditable="true" style="aspect-ratio:'+ratio+'">'+mdToHTML(content.trim())+'<span class="slide-num">'+(reportActive+1)+'/'+reportSlides.length+'</span></div>';
+  var sp=canvas.querySelector('.slide-page');
+  if(sp){
+    sp.addEventListener('input',function(){
+      reportSlides[reportActive]=wysiwygToMD(sp);
+      var tail=getOMDTail(currentOMD);
+      currentOMD='---\ntitle: "'+title+'"\ntags: []\n---\n\n'+reportSlides.join('\n\n---slide---\n\n')+'\n\n'+tail;
+      mark(true);
+    });
+  }
+  buildSidebar(mode);
+}
 
 
 function save(){
@@ -552,15 +599,10 @@ var _origRefresh=refresh;refresh=function(){if(mode==="default"){renderBlocks();
     var btn=document.createElement('button');
     btn.className='tb-btn';btn.textContent=t.label;
     btn.onclick=function(){
-      if(!reportSlides||!reportSlides.length)return;reportSlides.push(t.md);renderReportPages();buildSidebar(mode);return;var slides=document.querySelectorAll('.report-canvas .slide-page');
-      if(slides.length){
-        var last=slides[slides.length-1];
-        var div=document.createElement('div');
-        div.className='slide-page';div.contentEditable='true';
-        div.innerHTML=mdToHTML(t.md)+'<span class="slide-num">'+(slides.length+1)+'/'+(slides.length+1)+'</span>';
-        last.parentNode.insertBefore(div,last.nextSibling);
-        div.focus();mark(true);
-      }
+      if(!reportSlides||!reportSlides.length)return;
+      reportSlides.push(t.md);
+      reportActive=reportSlides.length-1;
+      renderReportSlide();
     };
     ro.appendChild(btn);
   });
@@ -579,6 +621,8 @@ ma.addEventListener('wheel',function(e){if(!e.ctrlKey)return;if(mode!=='article'
 var _origSetMode=setMode;setMode=function(m){_origSetMode(m);updateZoomClass()};
 updateZoomClass();
 document.getElementById("page-size").onchange=function(){if(mode==="article"){renderArticlePages();buildSidebar(mode)}};
+document.getElementById("slide-theme").onchange=function(){if(mode==="report")renderReportSlide()};
+document.getElementById("slide-ratio").onchange=function(){if(mode==="report")renderReportSlide()};
 </script>
 </body>
 </html>
