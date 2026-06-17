@@ -173,6 +173,7 @@ body{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Microsof
   <button class="tb-btn" id="b-quote">❝</button>
   <button class="tb-btn" id="b-table">⊞ 表格</button>
   <button class="tb-btn" id="b-img">🖼</button>
+  <span class="sep" style="margin:0 12px"></span>
   <span style="flex:1"></span>
   <button class="tb-btn" id="b-theme">🌓</button>
   <button class="tb-btn" id="b-new">新建</button>
@@ -217,7 +218,8 @@ currentOMD=DEFAULT;
 function parseOMD(omd){var t=omd.trimStart();var m=t.match(/^---\n([\s\S]*?)\n---\n/);var meta={title:''},rest=t;if(m){try{m[1].split('\n').forEach(function(l){var x=l.match(/^(\w+):\s*(.+)/);if(x&&x[1]==='title')meta.title=x[2].trim().replace(/^"(.*)"$/,'$1')})}catch(e){}rest=t.slice(m[0].length)}var r=rest.match(/<!--OMD\n?([\s\S]*?)\n?-->/);var body=rest;if(r)body=rest.slice(0,r.index).trim();else body=rest.trim();return{meta:meta,body:body}}
 function mdToHTML(body){var h='',lines=body.split('\n'),inT=false,tH='',inC=false,cH='';for(var i=0;i<lines.length;i++){var l=lines[i];if(/^```/.test(l)){if(inC){h+='<pre><code>'+esc(cH.trim())+'</code></pre>\n';cH='';inC=false}else{inC=true}continue}if(inC){cH+=l+'\n';continue}if(/^\|.+\|/.test(l)){if(!inT){inT=true;tH='<table>'}if(/^\|[\s\-:]+\|$/.test(l))continue;var tag=tH==='<table>'?'th':'td';tH+='<tr>'+l.split('|').slice(1,-1).map(function(c){return'<'+tag+'>'+c.trim()+'</'+tag+'>'}).join('')+'</tr>';continue}else if(inT){h+=tH+'</table>\n';tH='';inT=false}if(/^#### (.+)/.test(l))h+='<h4>'+l.slice(5)+'</h4>\n';else if(/^### (.+)/.test(l))h+='<h3>'+l.slice(4)+'</h3>\n';else if(/^## (.+)/.test(l))h+='<h2>'+l.slice(3)+'</h2>\n';else if(/^# (.+)/.test(l))h+='<h1>'+l.slice(2)+'</h1>\n';else if(/^> (.+)/.test(l))h+='<blockquote>'+l.slice(2)+'</blockquote>\n';else if(/^---+$/.test(l.trim()))h+='<hr>\n';else if(/^[\-\*] (.+)/.test(l))h+='<li>'+l.slice(2)+'</li>\n';else if(/^\s*$/.test(l))h+='<br>';else{var t=l;t=t.replace(/\*\*\*(.+?)\*\*\*/g,'<strong><em>$1</em></strong>');t=t.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');t=t.replace(/\*(.+?)\*/g,'<em>$1</em>');t=t.replace(/`([^`]+)`/g,'<code>$1</code>');t=t.replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a href="$2">$1</a>');h+='<p>'+t+'</p>\n'}}if(inT)h+=tH+'</table>\n';if(inC)h+='<pre><code>'+esc(cH.trim())+'</code></pre>\n';h=h.replace(/((?:<li>[\s\S]*?<\/li>\n?)+)/g,'<ul>$1</ul>');return h}
 function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
-function getActiveEditable(){return document.activeElement&&document.activeElement.isContentEditable?document.activeElement:document.querySelector('[contenteditable="true"]:focus')||document.querySelector('[contenteditable="true"]')}
+var lastFocusedEditable=null;document.addEventListener('focusin',function(e){var el=e.target;if(el.isContentEditable){lastFocusedEditable=el}else if(el.closest){var p=el.closest('[contenteditable="true"]');if(p)lastFocusedEditable=p}});
+function getActiveEditable(){var a=document.activeElement;if(a&&a.isContentEditable)return a;if(a&&a.closest){var p=a.closest('[contenteditable="true"]');if(p)return p}if(lastFocusedEditable&&document.contains(lastFocusedEditable))return lastFocusedEditable;return document.querySelector('[contenteditable="true"]')}
 function doCmd(cmd,val){var el=getActiveEditable();if(el){el.focus();document.execCommand(cmd,false,val);mark(true)}}
 function wysiwygToMD(el){var p=[];function w(n){if(n.nodeType===3){p.push(n.textContent);return}if(n.nodeType!==1)return;var t=n.tagName.toLowerCase(),k=n.childNodes;function e(){for(var i=0;i<k.length;i++)w(k[i])}switch(t){case'h1':p.push('# ');e();p.push('\n\n');break;case'h2':p.push('## ');e();p.push('\n\n');break;case'h3':p.push('### ');e();p.push('\n\n');break;case'h4':p.push('#### ');e();p.push('\n\n');break;case'p':e();p.push('\n\n');break;case'strong':p.push('**');e();p.push('**');break;case'em':p.push('*');e();p.push('*');break;case'code':if(n.parentNode.tagName.toLowerCase()==='pre'){p.push('\n```\n');e();p.push('\n```\n')}else{p.push('`');e();p.push('`')}break;case'pre':e();break;case'blockquote':p.push('> '+n.textContent.trim().replace(/\n/g,'\n> ')+'\n\n');break;case'li':p.push('- ');e();p.push('\n');break;case'ul':case'ol':e();p.push('\n');break;case'br':p.push('\n');break;case'table':var rs=n.querySelectorAll('tr');for(var r=0;r<rs.length;r++){var cs=rs[r].querySelectorAll('th,td');p.push('|'+Array.from(cs).map(function(c){return' '+c.textContent.trim()+' |'}).join('')+'\n');if(r===0&&cs.length)p.push('|'+Array.from(cs).map(function(){return' --- |'}).join('')+'\n')}p.push('\n');break;default:e();break}}w(el);return p.join('').replace(/\n{3,}/g,'\n\n').trim()}
 function getOMDTail(omd){var m=omd.match(/<!--OMD\n?([\s\S]*?)\n?-->/);return m?'<!--OMD\n'+m[1].trim()+'\n-->':'<!--OMD\n-->'}
@@ -418,7 +420,9 @@ function renderArticlePages(){
       var parts=[];
       for(var j=0;j<all.length;j++){parts.push(wysiwygToMD(all[j]))}
       var tail=getOMDTail(currentOMD);
-      currentOMD='---\ntitle: "'+title+'"\ntags: []\n---\n\n'+parts.join('\n\n')+'\n\n'+tail;
+      var body=parts.join('\n\n');
+      var m=body.match(/^#\s+(.+)/m);if(m){title=m[1].trim();document.title=title+' - OMD Editor'}
+      currentOMD='---\ntitle: "'+title+'"\ntags: []\n---\n\n'+body+'\n\n'+tail;
       mark(true);
     });
   }
@@ -609,7 +613,7 @@ var _origRefresh=refresh;refresh=function(){if(mode==="article"){renderArticlePa
 })();
 var AUTOSAVE_KEY='omd-autosave';
 function autosaveSave(){if(dirty){try{localStorage.setItem(AUTOSAVE_KEY,JSON.stringify({omd:currentOMD,title:title,mode:mode,time:Date.now()}))}catch(e){}}}
-function autosaveLoad(){try{var d=JSON.parse(localStorage.getItem(AUTOSAVE_KEY));if(d&&d.omd&&Date.now()-d.time<86400000){currentOMD=d.omd;title=d.title;if(d.mode)mode=d.mode;refresh();mark(false);document.getElementById('st').textContent='已恢复';setTimeout(function(){document.getElementById('st').textContent='已保存'},2000);return true}}catch(e){}return false}
+function autosaveLoad(){try{var d=JSON.parse(localStorage.getItem(AUTOSAVE_KEY));if(d&&d.omd&&Date.now()-d.time<86400000){currentOMD=d.omd;title=d.title;if(d.mode)mode=d.mode;setTimeout(function(){setMode(mode);mark(false);document.getElementById('st').textContent='已恢复';setTimeout(function(){document.getElementById('st').textContent='已保存'},2000)},0);return true}}catch(e){}return false}
 setInterval(function(){if(dirty)autosaveSave()},30000);
 autosaveLoad();
 function applySlideTheme(theme){document.querySelector('.main-area').className=document.querySelector('.main-area').className.replace(/slide-theme-\w+/g,'');if(theme!=='dark')document.querySelector('.main-area').classList.add('slide-theme-'+theme);document.getElementById('preso-stage').className=document.getElementById('preso-stage').className.replace(/slide-theme-\w+/g,'');if(theme!=='dark')document.getElementById('preso-stage').classList.add('slide-theme-'+theme)}
