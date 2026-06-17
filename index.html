@@ -312,7 +312,7 @@ function setMode(m){
 
   if(m==='default'){
     ma.style.padding='0';
-    ma.innerHTML='<div class="block-stream" id="block-stream"></div><div class="block-toolbar" id="block-toolbar">'+'<button title="想法" onclick="addBlock('idea')">💡</button>'+'<button title="待办" onclick="addBlock('todo')">⬜</button>'+'<button title="完成" onclick="addBlock('done')">✅</button>'+'<button title="重点" onclick="addBlock('pin')">📌</button>'+'<button title="标题" onclick="addBlock('h1')">T</button>'+'<button title="引用" onclick="addBlock('quote')">💬</button>'+'</div>';
+    ma.innerHTML="<div class=\"block-stream\" id=\"block-stream\"></div><div class=\"block-toolbar\" id=\"block-toolbar\"><button title=\"想法\" onclick=\"addBlock('idea')\">💡</button><button title=\"待办\" onclick=\"addBlock('todo')\">⬜</button><button title=\"完成\" onclick=\"addBlock('done')\">✅</button><button title=\"重点\" onclick=\"addBlock('pin')\">📌</button><button title=\"标题\" onclick=\"addBlock('h1')\">T</button><button title=\"引用\" onclick=\"addBlock('quote')\">💬</button></div>";
     renderBlocks();
     buildSidebar(m);
     return;
@@ -471,32 +471,14 @@ document.addEventListener('keydown',function(e){var overlay=document.getElementB
 
 var BLOCK_ICONS={idea:"💡",todo:"⬜",done:"✅",pin:"📌",h1:"#",h2:"##",quote:"💬"};
 var BLOCK_PLACEHOLDER={idea:"写点什么...",todo:"待办事项...",done:"已完成...",pin:"重点标记...",h1:"标题",h2:"副标题",quote:"引用..."};
-function createBlock(type,text){var d=document.createElement("div");d.className="block"+(text?"":" block-empty");d.setAttribute("data-type",type);d.innerHTML="<span class="block-icon">"+BLOCK_ICONS[type]+"</span><span class="block-text" contenteditable="true" data-placeholder=""+BLOCK_PLACEHOLDER[type]+""></span>";if(text)d.querySelector(".block-text").textContent=text;var txt=d.querySelector(".block-text");txt.addEventListener("keydown",blockKeydown);txt.addEventListener("input",function(){mark(true)});txt.addEventListener("focus",function(){d.classList.remove("block-empty")});txt.addEventListener("blur",function(){if(!this.textContent.trim())d.classList.add("block-empty")});return d}
+function createBlock(type,text){var d=document.createElement("div");d.className="block"+(text?"":" block-empty");d.setAttribute("data-type",type);var icon=BLOCK_ICONS[type];var ph=BLOCK_PLACEHOLDER[type];d.innerHTML="<span class=block-icon>"+icon+"</span><span class=block-text contenteditable=true data-placeholder=\""+ph+"\"></span>";if(text)d.querySelector(".block-text").textContent=text;var txt=d.querySelector(".block-text");txt.addEventListener("keydown",blockKeydown);txt.addEventListener("input",function(){mark(true)});txt.addEventListener("focus",function(){d.classList.remove("block-empty")});txt.addEventListener("blur",function(){if(!this.textContent.trim())d.classList.add("block-empty")});return d}
 function addBlock(type){var s=document.getElementById("block-stream");var b=createBlock(type);s.appendChild(b);b.querySelector(".block-text").focus();mark(true)}
 function blockKeydown(e){if(e.key==="Enter"){e.preventDefault();var type=this.parentNode.getAttribute("data-type");var b=createBlock(type);this.parentNode.parentNode.insertBefore(b,this.parentNode.nextSibling);b.querySelector(".block-text").focus()}else if(e.key==="Backspace"&&!this.textContent.trim()&&document.querySelectorAll(".block").length>1){e.preventDefault();var prev=this.parentNode.previousSibling;this.parentNode.remove();if(prev&&prev.querySelector){var t=prev.querySelector(".block-text");if(t){t.focus();var r=document.createRange();r.selectNodeContents(t);r.collapse(false);var s=window.getSelection();s.removeAllRanges();s.addRange(r)}}}}
-function blocksToMD(){var lines=[],blocks=document.querySelectorAll(".block");blocks.forEach(function(b){var type=b.getAttribute("data-type"),text=(b.querySelector(".block-text")||{}).textContent||"";switch(type){case"h1":lines.push("# "+text);break;case"h2":lines.push("## "+text);break;case"idea":lines.push(text);break;case"todo":lines.push("- [ ] "+text);break;case"done":lines.push("- [x] "+text);break;case"pin":lines.push("**"+text+"**");break;case"quote":lines.push("> "+text);break;default:lines.push(text)}});return lines.join("
-
-")}
+function blocksToMD(){var lines=[],blocks=document.querySelectorAll(".block");blocks.forEach(function(b){var type=b.getAttribute("data-type"),text=(b.querySelector(".block-text")||{}).textContent||"";switch(type){case"h1":lines.push("# "+text);break;case"h2":lines.push("## "+text);break;case"idea":lines.push(text);break;case"todo":lines.push("- [ ] "+text);break;case"done":lines.push("- [x] "+text);break;case"pin":lines.push("**"+text+"**");break;case"quote":lines.push("> "+text);break;default:lines.push(text)}});return lines.join(String.fromCharCode(10,10))}
 function renderBlocks(){var s=document.getElementById("block-stream");if(!s)return;s.innerHTML="";var d=parseOMD(currentOMD);var blocks=parseMDToBlocks(d.body);if(!blocks.length){addBlock("idea");return}blocks.forEach(function(b){var el=createBlock(b.type,b.text);s.appendChild(el)})}
-function parseMDToBlocks(body){if(!body||!body.trim())return[];var lines=body.split("
-"),blocks=[];for(var i=0;i<lines.length;i++){var l=lines[i];if(/^- [x] (.+)/.test(l)){blocks.push({type:"done",text:l.match(/^- [x] (.+)/)[1]})}else if(/^- [ ] (.+)/.test(l)){blocks.push({type:"todo",text:l.match(/^- [ ] (.+)/)[1]})}else if(/^# (.+)/.test(l)){blocks.push({type:"h1",text:l.match(/^# (.+)/)[1]})}else if(/^## (.+)/.test(l)){blocks.push({type:"h2",text:l.match(/^## (.+)/)[1]})}else if(/^> (.+)/.test(l)){blocks.push({type:"quote",text:l.match(/^> (.+)/)[1]})}else if(/^**(.+)**$/.test(l)){blocks.push({type:"pin",text:l.match(/^**(.+)**$/)[1]})}else if(/^s*$/.test(l)){}else{blocks.push({type:"idea",text:l})}}return blocks}
-var _origSync=sync;sync=function(){if(mode==="default"){var tail=getOMDTail(currentOMD);currentOMD="---
-title: ""+title+""
-tags: []
----
-
-"+blocksToMD()+"
-
-"+tail;return}if(mode==="report"){var tail=getOMDTail(currentOMD);var slides=[];document.querySelectorAll(".main-area .slide-page").forEach(function(sp){var clone=sp.cloneNode(true);var num=clone.querySelector(".slide-num");if(num)num.remove();slides.push(wysiwygToMD(clone))});currentOMD="---
-title: ""+title+""
-tags: []
----
-
-"+slides.join("\n\n---slide---\n\n")+"
-
-"+tail;return}return _origSync();};
+function parseMDToBlocks(body){if(!body||!body.trim())return[];var lines=body.split(String.fromCharCode(10)),blocks=[];for(var i=0;i<lines.length;i++){var l=lines[i],m;if(m=l.match(/^- \[x\] (.+)/)){blocks.push({type:"done",text:m[1]})}else if(m=l.match(/^- \[ \] (.+)/)){blocks.push({type:"todo",text:m[1]})}else if(m=l.match(/^# (.+)/)){blocks.push({type:"h1",text:m[1]})}else if(m=l.match(/^## (.+)/)){blocks.push({type:"h2",text:m[1]})}else if(m=l.match(/^> (.+)/)){blocks.push({type:"quote",text:m[1]})}else if(m=l.match(/^\*\*(.+)\*\*$/)){blocks.push({type:"pin",text:m[1]})}else if(/^\s*$/.test(l)){}else{blocks.push({type:"idea",text:l})}}return blocks}
+var _origSync=sync;sync=function(){if(mode==="default"){var tail=getOMDTail(currentOMD);currentOMD="---"+String.fromCharCode(10)+"title: "+title+String.fromCharCode(10)+"tags: []"+String.fromCharCode(10)+"---"+String.fromCharCode(10,10)+blocksToMD()+String.fromCharCode(10,10)+tail;return}if(mode==="report"){var tail=getOMDTail(currentOMD);var slides=[];document.querySelectorAll(".main-area .slide-page").forEach(function(sp){var clone=sp.cloneNode(true);var num=clone.querySelector(".slide-num");if(num)num.remove();slides.push(wysiwygToMD(clone))});currentOMD="---"+String.fromCharCode(10)+"title: "+title+String.fromCharCode(10)+"tags: []"+String.fromCharCode(10)+"---"+String.fromCharCode(10,10)+slides.join(String.fromCharCode(10,10)+"---slide---"+String.fromCharCode(10,10))+String.fromCharCode(10,10)+tail;return}return _origSync();};
 var _origRefresh=refresh;refresh=function(){if(mode==="default"){renderBlocks();return}return _origRefresh();};
-refresh();
 
 // 幻灯片模板按钮
 (function(){
