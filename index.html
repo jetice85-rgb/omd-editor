@@ -68,6 +68,8 @@ body{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Microsof
 .block{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;margin:4px 0;border-radius:12px;background:var(--card);border:1px solid transparent;transition:.15s;cursor:text}
 .block:hover{border-color:var(--bd)}
 .block:focus-within{border-color:var(--red);box-shadow:0 0 0 2px rgba(233,69,96,.15)}
+.block-dragging{opacity:.4;cursor:grabbing}
+.block-drag-over{border:2px dashed var(--red)!important}
 .block-icon{font-size:22px;flex-shrink:0;width:32px;text-align:center;line-height:1.4;user-select:none}
 .block-text{flex:1;outline:none;font-size:16px;line-height:1.6;color:var(--note-tx);min-height:24px;word-break:break-word}
 .block-text:empty:before{content:attr(data-placeholder);color:var(--dim);opacity:.5}
@@ -630,6 +632,52 @@ document.addEventListener('keydown',function(e){
   }
 });
 
+// Markdown live formatting shortcuts (article & report mode)
+function getCurrentLineInfo(){
+  var sel=window.getSelection();
+  if(!sel.rangeCount)return null;
+  var node=sel.anchorNode;
+  if(!node)return null;
+  var editable=node.nodeType===3?node.parentElement:node;
+  if(!editable||!editable.closest)return null;
+  var ce=editable.closest('[contenteditable="true"]');
+  if(!ce)return null;
+  if(!ce.classList.contains('article-page')&&!ce.classList.contains('slide-page'))return null;
+  var offset=sel.anchorOffset;
+  var text=node.nodeType===3?node.textContent:'';
+  var beforeCursor=node.nodeType===3?text.slice(0,offset):'';
+  var lineStart=beforeCursor.lastIndexOf('\n');
+  if(lineStart===-1)lineStart=0;else lineStart++;
+  var line=beforeCursor.slice(lineStart);
+  return{editable:ce,node:node,offset:offset,line:line,lineStart:lineStart,text:text,beforeCursor:beforeCursor};
+}
+document.addEventListener('input',function(e){
+  if(mode!=='article'&&mode!=='report')return;
+  var info=getCurrentLineInfo();
+  if(!info)return;
+  var line=info.line;
+  var m,cmd;
+  if(line==='# '){cmd='h1'}
+  else if(line==='## '){cmd='h2'}
+  else if(line==='- '){cmd='li'}
+  else if(line==='> '){cmd='blockquote'}
+  else if(/^\d+\. $/.test(line)){cmd='ol'}
+  else return;
+  var node=info.node,offset=info.offset;
+  var before=info.text.slice(0,info.lineStart);
+  var after=info.text.slice(offset);
+  node.textContent=before+after;
+  var newPos=before.length;
+  var range=document.createRange();
+  if(node.firstChild){range.setStart(node.firstChild,Math.min(newPos,node.firstChild.length||0))}
+  else{range.setStart(node,Math.min(newPos,node.textContent.length))}
+  range.collapse(true);
+  var sel=window.getSelection();sel.removeAllRanges();sel.addRange(range);
+  if(cmd==='li'){document.execCommand('insertUnorderedList',false,null)}
+  else if(cmd==='ol'){document.execCommand('insertOrderedList',false,null)}
+  else{document.execCommand('formatBlock',false,'<'+cmd+'>')}
+  mark(true);
+});
 // 剪贴板粘贴图片
 document.addEventListener('paste',function(e){
   var items=e.clipboardData&&e.clipboardData.items;
@@ -693,9 +741,10 @@ document.addEventListener('keydown',function(e){var overlay=document.getElementB
 
 var BLOCK_ICONS={idea:"💡",todo:"⬜",done:"✅",pin:"📌",h1:"#",h2:"##",quote:"💬"};
 var BLOCK_PLACEHOLDER={idea:"写点什么...",todo:"待办事项...",done:"已完成...",pin:"重点标记...",h1:"标题",h2:"副标题",quote:"引用..."};
-function createBlock(type,text){var d=document.createElement("div");d.className="block"+(text?"":" block-empty");d.setAttribute("data-type",type);var icon=BLOCK_ICONS[type];var ph=BLOCK_PLACEHOLDER[type];d.innerHTML="<span class=block-icon>"+icon+"</span><span class=block-text contenteditable=true data-placeholder=\""+ph+"\"></span>";if(text)d.querySelector(".block-text").textContent=text;var txt=d.querySelector(".block-text");txt.addEventListener("keydown",blockKeydown);txt.addEventListener("input",function(){mark(true)});txt.addEventListener("focus",function(){d.classList.remove("block-empty")});txt.addEventListener("blur",function(){if(!this.textContent.trim())d.classList.add("block-empty")});return d}
+function createBlock(type,text){var d=document.createElement("div");d.className="block"+(text?"":" block-empty");d.setAttribute("data-type",type);d.setAttribute("draggable","true");var icon=BLOCK_ICONS[type];var ph=BLOCK_PLACEHOLDER[type];d.innerHTML="<span class=block-icon>"+icon+"</span><span class=block-text contenteditable=true data-placeholder=\""+ph+"\"></span>";if(text)d.querySelector(".block-text").textContent=text;var txt=d.querySelector(".block-text");txt.addEventListener("keydown",blockKeydown);txt.addEventListener("input",function(){mark(true)});txt.addEventListener("focus",function(){d.classList.remove("block-empty")});txt.addEventListener("blur",function(){if(!this.textContent.trim())d.classList.add("block-empty")});d.addEventListener("dragstart",blockDragStart);d.addEventListener("dragend",blockDragEnd);d.addEventListener("dragover",blockDragOver);d.addEventListener("dragleave",blockDragLeave);d.addEventListener("drop",blockDrop);return d}
 function addBlock(type){var s=document.getElementById("block-stream");var b=createBlock(type);s.appendChild(b);b.querySelector(".block-text").focus();mark(true)}
 function blockKeydown(e){if(e.key==="Enter"){e.preventDefault();var type=this.parentNode.getAttribute("data-type");var b=createBlock(type);this.parentNode.parentNode.insertBefore(b,this.parentNode.nextSibling);b.querySelector(".block-text").focus()}else if(e.key==="Backspace"&&!this.textContent.trim()&&document.querySelectorAll(".block").length>1){e.preventDefault();var prev=this.parentNode.previousSibling;this.parentNode.remove();if(prev&&prev.querySelector){var t=prev.querySelector(".block-text");if(t){t.focus();var r=document.createRange();r.selectNodeContents(t);r.collapse(false);var s=window.getSelection();s.removeAllRanges();s.addRange(r)}}}}
+var dragSrc=null;function blockDragStart(e){dragSrc=this;this.classList.add("block-dragging");e.dataTransfer.effectAllowed="move";e.dataTransfer.setData("text/plain","")}function blockDragEnd(e){this.classList.remove("block-dragging");var all=document.querySelectorAll(".block");for(var i=0;i<all.length;i++)all[i].classList.remove("block-drag-over");dragSrc=null}function blockDragOver(e){e.preventDefault();e.dataTransfer.dropEffect="move";if(this!==dragSrc)this.classList.add("block-drag-over")}function blockDragLeave(e){this.classList.remove("block-drag-over")}function blockDrop(e){e.preventDefault();this.classList.remove("block-drag-over");if(!dragSrc||dragSrc===this)return;var rect=this.getBoundingClientRect(),midY=rect.top+rect.height/2;if(e.clientY<midY){this.parentNode.insertBefore(dragSrc,this)}else{this.parentNode.insertBefore(dragSrc,this.nextSibling)}mark(true)}
 function blocksToMD(){var lines=[],blocks=document.querySelectorAll(".block");blocks.forEach(function(b){var type=b.getAttribute("data-type"),text=(b.querySelector(".block-text")||{}).textContent||"";switch(type){case"h1":lines.push("# "+text);break;case"h2":lines.push("## "+text);break;case"idea":lines.push(text);break;case"todo":lines.push("- [ ] "+text);break;case"done":lines.push("- [x] "+text);break;case"pin":lines.push("**"+text+"**");break;case"quote":lines.push("> "+text);break;default:lines.push(text)}});return lines.join(String.fromCharCode(10,10))}
 function renderBlocks(){var s=document.getElementById("block-stream");if(!s)return;s.innerHTML="";var d=parseOMD(currentOMD);var blocks=parseMDToBlocks(d.body);if(!blocks.length){addBlock("idea");return}blocks.forEach(function(b){var el=createBlock(b.type,b.text);s.appendChild(el)})}
 function parseMDToBlocks(body){if(!body||!body.trim())return[];var lines=body.split(String.fromCharCode(10)),blocks=[];for(var i=0;i<lines.length;i++){var l=lines[i],m;if(m=l.match(/^- \[x\] (.+)/)){blocks.push({type:"done",text:m[1]})}else if(m=l.match(/^- \[ \] (.+)/)){blocks.push({type:"todo",text:m[1]})}else if(m=l.match(/^# (.+)/)){blocks.push({type:"h1",text:m[1]})}else if(m=l.match(/^## (.+)/)){blocks.push({type:"h2",text:m[1]})}else if(m=l.match(/^> (.+)/)){blocks.push({type:"quote",text:m[1]})}else if(m=l.match(/^\*\*(.+)\*\*$/)){blocks.push({type:"pin",text:m[1]})}else if(/^\s*$/.test(l)){}else{blocks.push({type:"idea",text:l})}}return blocks}
