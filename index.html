@@ -309,7 +309,7 @@ function buildSidebar(m){if(sidebarTab==="vault"){loadVault();return}
 
   if(m==='default'){
     SAMPLE_NOTES.forEach(function(n){sb.innerHTML+='<div class="item"><div>'+n.t+'</div><div class="sub">'+n.s+'</div></div>'});
-    sb.innerHTML+='<div class="ai-status"><span class="ai-dot"></span> AI 已索引 3 篇</div>';
+    
   }else if(m==='article'){
     renderArticleThumbs();
   }else if(m==='report'){
@@ -606,7 +606,7 @@ document.getElementById('b-h2').onclick=function(){doCmd('formatBlock','h2')};
 document.getElementById('b-list').onclick=function(){doCmd('insertUnorderedList')};
 document.getElementById('b-quote').onclick=function(){doCmd('formatBlock','blockquote')};
 document.getElementById('b-table').onclick=function(){doCmd('insertHTML','<table><thead><tr><th>A</th><th>B</th><th>C</th></tr></thead><tbody><tr><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td></tr></tbody></table><br>')};
-document.getElementById('b-img').onclick=function(){var u=prompt('图片 URL:');if(u)doCmd('insertImage',u)};
+document.getElementById('b-img').onclick=function(){var u=prompt('图片 URL:');if(u&&/^(https?://|data:image/)/.test(u))doCmd('insertImage',u);else if(u)alert('无效URL')};
 document.getElementById('b-theme').onclick=function(){document.body.classList.toggle('light')};
 document.getElementById('b-fullscreen').onclick=toggleArticleFullscreen;
 document.getElementById('b-new').onclick=function(){currentOMD=DEFAULT;setMode('default');mark(false);refresh()};
@@ -709,7 +709,7 @@ document.addEventListener('paste',function(e){
 
 // 字数统计
 function countWords(t){
-  var cn=t.match(/[一-鿿]/g);cn=cn?cn.length:0;
+  var cn=t.match(/[一-鿿㐀-䶿]/g);cn=cn?cn.length:0;
   var en=t.match(/[a-zA-Z]+/g);en=en?en.length:0;
   return cn+en;
 }
