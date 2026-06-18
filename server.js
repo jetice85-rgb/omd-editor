@@ -144,6 +144,26 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  // API: 导入 docx
+  if (req.method === 'POST' && url.pathname === '/api/import/docx') {
+    const chunks = [];
+    req.on('data', d => chunks.push(d));
+    req.on('end', async () => {
+      try {
+        const mammoth = require('mammoth');
+        const buf = Buffer.concat(chunks);
+        const result = await mammoth.convertToMarkdown({ buffer: buf });
+        const omd = '---\ntitle: "导入文档"\ntags: [导入]\n---\n\n' + (result.value || '') + '\n\n<!--OMD\n-->\n';
+        res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' });
+        res.end(omd);
+      } catch (e) {
+        res.writeHead(500);
+        res.end('Import error: ' + e.message);
+      }
+    });
+    return;
+  }
+
   // API: 解析
   if (req.method === 'POST' && url.pathname === '/api/parse') {
     let body = '';

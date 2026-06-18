@@ -250,6 +250,7 @@ mark.search-highlight.current{background:#ff9800;color:#fff}
   <button class="tb-btn" id="b-fullscreen" title="全屏文稿 (F11)">⛶</button>
   <button class="tb-btn" id="b-new">新建</button>
   <button class="tb-btn" id="b-open">打开</button>
+  <button class="tb-btn" id="b-import" style="border-color:var(--red);color:var(--red)">导入</button>
   <button class="tb-btn" style="border-color:var(--red);color:var(--red)" id="b-save">保存</button>
   <div class="exp-wrap"><button class="tb-btn" style="background:var(--red);border-color:var(--red);color:#fff" id="b-export">⤓ 导出 ▾</button>
     <div class="exp-menu" id="exp-menu"><div data-fmt="docx">📄 Word</div><div data-fmt="xlsx">📊 Excel</div><div data-fmt="pptx">📽 PPT</div><div data-fmt="pdf">📕 PDF</div></div>
@@ -558,6 +559,7 @@ function renderReportSlide(){
 }
 
 
+function importDocx(){var i=document.createElement("input");i.type="file";i.accept=".docx";i.onchange=function(e){var f=e.target.files[0];if(!f)return;var r=new FileReader();r.onload=function(ev){fetch("/api/import/docx",{method:"POST",body:ev.target.result}).then(function(r){return r.text()}).then(function(omd){currentOMD=omd;title="导入文档";mark(false);setMode("article");refresh()}).catch(function(){alert("导入失败")})};r.readAsArrayBuffer(f)};i.click()}
 function save(){
   sync();
   // 尝试 File System Access API
@@ -612,6 +614,7 @@ document.getElementById('b-theme').onclick=function(){document.body.classList.to
 document.getElementById('b-fullscreen').onclick=toggleArticleFullscreen;
 document.getElementById('b-new').onclick=function(){currentOMD=DEFAULT;setMode('default');mark(false);refresh()};
 document.getElementById('b-open').onclick=openFile;
+document.getElementById('b-import').onclick=importDocx;
 document.getElementById('b-save').onclick=save;
 var expBtn=document.getElementById('b-export'),expMenu=document.getElementById('exp-menu');
 expBtn.onclick=function(e){e.stopPropagation();expMenu.classList.toggle('show')};
