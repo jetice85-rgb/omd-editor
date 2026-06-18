@@ -606,7 +606,7 @@ document.getElementById('b-h2').onclick=function(){doCmd('formatBlock','h2')};
 document.getElementById('b-list').onclick=function(){doCmd('insertUnorderedList')};
 document.getElementById('b-quote').onclick=function(){doCmd('formatBlock','blockquote')};
 document.getElementById('b-table').onclick=function(){doCmd('insertHTML','<table><thead><tr><th>A</th><th>B</th><th>C</th></tr></thead><tbody><tr><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td></tr></tbody></table><br>')};
-document.getElementById('b-img').onclick=function(){var u=prompt('图片 URL:');if(u&&/^(https?://|data:image/)/.test(u))doCmd('insertImage',u);else if(u)alert('无效URL')};
+document.getElementById('b-img').onclick=function(){var u=prompt('图片 URL:');if(u&&/^(https?:\/\/|data:image\/)/.test(u))doCmd('insertImage',u);else if(u)alert('无效URL')};
 document.getElementById('b-theme').onclick=function(){document.body.classList.toggle('light')};
 document.getElementById('b-fullscreen').onclick=toggleArticleFullscreen;
 document.getElementById('b-new').onclick=function(){currentOMD=DEFAULT;setMode('default');mark(false);refresh()};
