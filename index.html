@@ -26,6 +26,7 @@ body.light{
   --ctx-bg:#fff;--ctx-bd:#d9d9d0;--ctx-tx:#1a1a1a;
 }
 *{margin:0;padding:0;box-sizing:border-box}
+.block{animation:blockIn .25s ease-out}@keyframes blockIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 body{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--tx);height:100vh;overflow:hidden;display:flex;flex-direction:column;max-width:100vw}
 .main-area{overflow-x:hidden}
 .slide-page,.article-page{max-width:100%;box-sizing:border-box}
@@ -61,7 +62,7 @@ body{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Microsof
 .article-page,.slide-page{max-width:100%!important;word-wrap:break-word;overflow-wrap:break-word}
 .main-area.zoomable{--zoom:1}
 .main-area.zoomable>*{transform:scale(var(--zoom));transform-origin:top left}
-.main-area.zoomable .article-page{box-shadow:0 2px 16px rgba(0,0,0,.2)}
+.main-area.zoomable .article-page{box-shadow:0 1px 3px rgba(0,0,0,.06),0 3px 12px rgba(0,0,0,.08),0 8px 28px rgba(0,0,0,.12),0 16px 48px rgba(0,0,0,.06)}
 
 /* 灵感流模式 */
 .block-stream{flex:1;overflow-y:auto;padding:16px}
